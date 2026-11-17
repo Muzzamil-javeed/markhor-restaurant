@@ -10,16 +10,22 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default function CheckoutPage() {
   return (
-    <main className="mx-auto w-full max-w-[720px] px-4 py-8">
-      <header className="mb-6">
-        <p className="text-xs font-medium tracking-[0.18em] text-muted uppercase">
+    <main className="mx-auto w-full max-w-[760px] px-4 py-8 sm:py-10">
+      <header className="mb-8">
+        <p className="font-eyebrow text-[10px] font-semibold tracking-[0.18em] text-brand uppercase">
           Checkout
         </p>
-        <h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-ink">
+        <h1 className="font-heading mt-2 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
           Place your order
         </h1>
+        <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted">
+          Three quick steps — choose how you want it, share your details, then
+          confirm.
+        </p>
       </header>
-      <CheckoutForm />
+      <div className="rounded-2xl border border-line bg-white p-4 shadow-[0_10px_32px_rgba(36,26,27,0.04)] sm:p-5">
+        <CheckoutForm />
+      </div>
     </main>
   );
 }

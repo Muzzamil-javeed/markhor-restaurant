@@ -149,7 +149,7 @@ export async function dailySummary(now: Date = new Date()) {
   const end = new Date(start);
   end.setDate(end.getDate() + 1);
 
-  const [orders, cancelledCount] = await Promise.all([
+  const [orders, cancelledCount, completedCount] = await Promise.all([
     prisma.order.findMany({
       where: {
         createdAt: { gte: start, lt: end },
@@ -161,6 +161,12 @@ export async function dailySummary(now: Date = new Date()) {
       where: {
         createdAt: { gte: start, lt: end },
         status: "cancelled",
+      },
+    }),
+    prisma.order.count({
+      where: {
+        createdAt: { gte: start, lt: end },
+        status: "completed",
       },
     }),
   ]);
@@ -188,6 +194,7 @@ export async function dailySummary(now: Date = new Date()) {
     date: start.toISOString().slice(0, 10),
     ordersCount: orders.length,
     cancelledCount,
+    completedCount,
     revenue,
     topItems,
   };

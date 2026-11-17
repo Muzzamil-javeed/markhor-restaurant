@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Ban, Banknote, Flame, ShoppingBag } from "lucide-react";
+import { Ban, Banknote, CheckCircle2, Flame, ShoppingBag } from "lucide-react";
 import { formatPKR } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -9,6 +9,7 @@ export type DailySummaryData = {
   date: string;
   ordersCount: number;
   cancelledCount: number;
+  completedCount: number;
   revenue: number;
   topItems: { name: string; qty: number }[];
 };
@@ -28,7 +29,7 @@ export function DailySummary({ summary }: { summary: DailySummaryData | null }) 
   return (
     <section
       aria-label="Daily summary"
-      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
     >
       <div className={cardClass}>
         <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-tint text-brand">
@@ -57,6 +58,27 @@ export function DailySummary({ summary }: { summary: DailySummaryData | null }) 
           </p>
         </div>
       </div>
+
+      <Link
+        href="/admin/orders/completed"
+        className={cn(
+          cardClass,
+          "group transition-all duration-200 hover:border-brand/25 hover:shadow-[0_8px_20px_rgba(94,15,29,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40",
+        )}
+      >
+        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-tint text-brand transition-colors duration-200 group-hover:bg-brand/10">
+          <CheckCircle2 className="size-4" aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <p className="font-eyebrow text-[10px] font-semibold tracking-[0.16em] text-muted uppercase">
+            Completed
+          </p>
+          <p className="mt-1.5 font-heading text-lg font-semibold tabular-nums text-ink">
+            {summary.completedCount}{" "}
+            {summary.completedCount === 1 ? "order" : "orders"}
+          </p>
+        </div>
+      </Link>
 
       <Link
         href="/admin/orders/cancelled"

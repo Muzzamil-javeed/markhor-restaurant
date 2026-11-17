@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Ban,
+  CheckCircle2,
   ClipboardList,
   LogOut,
   UtensilsCrossed,
@@ -14,6 +15,7 @@ import { cn } from "@/lib/cn";
 
 const links = [
   { href: "/admin/orders", label: "Orders", Icon: ClipboardList },
+  { href: "/admin/orders/completed", label: "Completed", Icon: CheckCircle2 },
   { href: "/admin/orders/cancelled", label: "Cancelled", Icon: Ban },
   { href: "/admin/menu", label: "Menu", Icon: UtensilsCrossed },
 ] as const;
@@ -22,11 +24,15 @@ function isActive(pathname: string, href: string) {
   if (href === "/admin/orders/cancelled") {
     return pathname.startsWith("/admin/orders/cancelled");
   }
+  if (href === "/admin/orders/completed") {
+    return pathname.startsWith("/admin/orders/completed");
+  }
   if (href === "/admin/orders") {
     return (
       pathname === "/admin/orders" ||
       (pathname.startsWith("/admin/orders/") &&
-        !pathname.startsWith("/admin/orders/cancelled"))
+        !pathname.startsWith("/admin/orders/cancelled") &&
+        !pathname.startsWith("/admin/orders/completed"))
     );
   }
   return pathname.startsWith(href);

@@ -57,7 +57,7 @@ export function TrackOrderClient() {
               value={code}
               onChange={(event) => setCode(event.target.value.toUpperCase())}
               placeholder="MK-4821"
-              className={fieldClassName}
+              className={fieldClassName()}
               autoComplete="off"
               spellCheck={false}
             />
@@ -75,7 +75,7 @@ export function TrackOrderClient() {
               onChange={(event) => setPhone(event.target.value)}
               placeholder="03XX XXXXXXX"
               inputMode="tel"
-              className={fieldClassName}
+              className={fieldClassName()}
               autoComplete="tel"
             />
           </div>

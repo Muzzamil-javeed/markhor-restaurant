@@ -1,12 +1,25 @@
 ﻿"use client";
 
-import { TransitionLink } from "@/components/transition/TransitionLink";
 import type { UseFormReturn } from "react-hook-form";
+import { motion } from "framer-motion";
+import {
+  Banknote,
+  Check,
+  CreditCard,
+  FileCheck2,
+  ShoppingBag,
+  Store,
+  type LucideIcon,
+} from "lucide-react";
+import { TransitionLink } from "@/components/transition/TransitionLink";
 import { computeCartTotals } from "@/lib/cart-totals";
 import { cn } from "@/lib/cn";
 import type { CheckoutFormInput } from "@/lib/checkout-schema";
 import { formatPKR } from "@/lib/format";
-import { paymentProviders } from "@/lib/payment";
+import {
+  paymentProviders,
+  type PaymentMethodId,
+} from "@/lib/payment";
 import { site } from "@/data/site";
 import { orderTypeLabels, type CartLine } from "@/store/cart";
 
@@ -15,6 +28,12 @@ type Props = {
   lines: CartLine[];
   voucherCode: string | null;
   total: number;
+};
+
+const PAYMENT_ICONS: Record<PaymentMethodId, LucideIcon> = {
+  cash: Banknote,
+  counter: Store,
+  online: CreditCard,
 };
 
 export function StepReview({ form, lines, voucherCode, total }: Props) {
@@ -33,71 +52,111 @@ export function StepReview({ form, lines, voucherCode, total }: Props) {
   });
 
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      className="flex flex-col gap-5"
+    >
       <div>
-        <p className="font-heading text-lg font-semibold text-ink">
+        <p className="font-heading text-lg font-semibold tracking-tight text-ink sm:text-xl">
           Payment & review
         </p>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-1 text-sm leading-relaxed text-muted">
           Confirm the bag, then place the order.
         </p>
       </div>
 
-      <div
-        role="radiogroup"
-        aria-label="Payment method"
-        className="flex flex-col gap-2"
-      >
-        {paymentProviders.map((provider) => {
-          const selected = paymentMethod === provider.id;
-          return (
-            <button
-              key={provider.id}
-              type="button"
-              role="radio"
-              aria-checked={selected}
-              disabled={!provider.enabled}
-              onClick={() => {
-                if (!provider.enabled) return;
-                setValue("paymentMethod", provider.id, {
-                  shouldValidate: true,
-                });
-              }}
-              className={cn(
-                "rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-55",
-                selected
-                  ? "border-brand bg-tint text-brand"
-                  : "border-line bg-white text-ink",
-              )}
-            >
-              <span className="block text-sm font-semibold">
-                {provider.label}
-              </span>
-              {provider.description ? (
-                <span className="mt-0.5 block text-xs text-muted">
-                  {provider.description}
-                </span>
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
-      {errors.paymentMethod ? (
-        <p className="text-xs text-destructive" role="alert">
-          {errors.paymentMethod.message}
+      <div>
+        <p className="font-eyebrow mb-2 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.16em] text-muted uppercase">
+          <Banknote className="size-3 text-brand" aria-hidden />
+          Payment
         </p>
-      ) : null}
+        <div
+          role="radiogroup"
+          aria-label="Payment method"
+          className="flex flex-col gap-2"
+        >
+          {paymentProviders.map((provider) => {
+            const selected = paymentMethod === provider.id;
+            const Icon = PAYMENT_ICONS[provider.id];
+            return (
+              <button
+                key={provider.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                disabled={!provider.enabled}
+                onClick={() => {
+                  if (!provider.enabled) return;
+                  setValue("paymentMethod", provider.id, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                    shouldTouch: true,
+                  });
+                }}
+                className={cn(
+                  "group relative flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-50",
+                  selected
+                    ? "border-brand bg-tint shadow-[0_6px_18px_rgba(94,15,29,0.08)]"
+                    : "border-line bg-white hover:border-brand/30 hover:bg-[#faf7f5]",
+                )}
+              >
+                <span
+                  className={cn(
+                    "inline-flex size-8 shrink-0 items-center justify-center rounded-full transition-colors duration-250",
+                    selected
+                      ? "bg-brand text-on-brand"
+                      : "bg-[#faf7f5] text-brand group-hover:bg-tint",
+                    !provider.enabled && "text-muted",
+                  )}
+                >
+                  <Icon className="size-3.5" aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1 pr-6">
+                  <span
+                    className={cn(
+                      "block text-sm font-semibold",
+                      selected ? "text-brand" : "text-ink",
+                    )}
+                  >
+                    {provider.label}
+                  </span>
+                  {provider.description ? (
+                    <span className="mt-0.5 block text-[11px] leading-snug text-muted">
+                      {provider.description}
+                    </span>
+                  ) : null}
+                </span>
+                {selected ? (
+                  <span className="absolute top-1/2 right-2.5 inline-flex size-4 -translate-y-1/2 items-center justify-center rounded-full bg-brand text-on-brand">
+                    <Check className="size-2.5" aria-hidden />
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+        {errors.paymentMethod ? (
+          <p className="mt-2 text-xs text-destructive" role="alert">
+            {errors.paymentMethod.message}
+          </p>
+        ) : null}
+      </div>
 
-      <div className="rounded-2xl border border-line bg-white px-4 py-4">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <p className="font-heading text-sm font-semibold text-ink">
+      <div className="rounded-xl border border-line bg-white px-3.5 py-3.5">
+        <div className="mb-2.5 flex items-center justify-between gap-3">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+            <ShoppingBag className="size-3.5 text-brand" aria-hidden />
             {orderTypeLabels[orderType ?? "delivery"]} order
           </p>
           {voucherCode ? (
-            <span className="text-xs font-medium text-brand">{voucherCode}</span>
+            <span className="rounded-full bg-tint px-2 py-0.5 text-[11px] font-medium text-brand">
+              {voucherCode}
+            </span>
           ) : null}
         </div>
-        <ul className="flex flex-col gap-2 border-b border-line pb-3">
+        <ul className="flex flex-col gap-1.5 border-b border-line pb-2.5">
           {lines.map((line) => (
             <li
               key={line.key}
@@ -108,7 +167,7 @@ export function StepReview({ form, lines, voucherCode, total }: Props) {
                   {line.quantity}× {line.name}
                 </span>
                 {line.summary ? (
-                  <span className="mt-0.5 block text-xs text-muted">
+                  <span className="mt-0.5 block text-[11px] text-muted">
                     {line.summary}
                   </span>
                 ) : null}
@@ -119,7 +178,7 @@ export function StepReview({ form, lines, voucherCode, total }: Props) {
             </li>
           ))}
         </ul>
-        <dl className="mt-3 flex flex-col gap-1.5 text-sm">
+        <dl className="mt-2.5 flex flex-col gap-1 text-sm">
           <div className="flex justify-between gap-3">
             <dt className="text-muted">Subtotal</dt>
             <dd className="tabular-nums">{formatPKR(totals.subtotal)}</dd>
@@ -144,20 +203,23 @@ export function StepReview({ form, lines, voucherCode, total }: Props) {
               </dd>
             </div>
           ) : null}
-          <div className="mt-1 flex justify-between gap-3 font-heading font-semibold">
+          <div className="mt-1 flex justify-between gap-3 border-t border-line pt-2 font-heading text-[15px] font-semibold">
             <dt>Total</dt>
-            <dd className="tabular-nums">{formatPKR(total)}</dd>
+            <dd className="tabular-nums text-brand">{formatPKR(total)}</dd>
           </div>
         </dl>
-        <p className="mt-3 text-xs text-muted">{site.footer.note}</p>
+        <p className="mt-2 text-[11px] leading-snug text-muted">
+          {site.footer.note}
+        </p>
       </div>
 
-      <label className="flex items-start gap-3 text-sm text-ink">
+      <label className="flex items-center gap-2.5 rounded-xl border border-line bg-[#faf7f5] px-3 py-2.5 text-sm text-ink">
         <input
           type="checkbox"
-          className="mt-1 size-4 rounded border-line text-brand focus-visible:ring-2 focus-visible:ring-brand/40"
+          className="size-4 shrink-0 rounded border-line text-brand focus-visible:ring-2 focus-visible:ring-brand/40"
           {...register("acceptTerms")}
         />
+        <FileCheck2 className="size-3.5 shrink-0 text-brand" aria-hidden />
         <span>
           I agree to the{" "}
           <TransitionLink
@@ -170,11 +232,10 @@ export function StepReview({ form, lines, voucherCode, total }: Props) {
         </span>
       </label>
       {errors.acceptTerms ? (
-        <p className="text-xs text-destructive" role="alert">
+        <p className="-mt-3 text-xs text-destructive" role="alert">
           {errors.acceptTerms.message}
         </p>
       ) : null}
-    </div>
+    </motion.div>
   );
 }
-

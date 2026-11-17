@@ -42,6 +42,25 @@ const optionalPartySize = z.preprocess((value) => {
   return value;
 }, z.number().int().min(1).max(30).optional());
 
+function refineMapPinUrl(
+  value: string | undefined,
+  ctx: z.RefinementCtx,
+) {
+  if (!value?.trim()) return;
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new Error("bad protocol");
+    }
+  } catch {
+    ctx.addIssue({
+      code: "custom",
+      path: ["mapPinUrl"],
+      message: "Map pin must be a valid http(s) link.",
+    });
+  }
+}
+
 export const checkoutFormSchema = z
   .object({
     orderType: z.enum(orderTypes),
@@ -115,6 +134,8 @@ export const checkoutFormSchema = z
       }
     }
 
+    refineMapPinUrl(data.mapPinUrl, ctx);
+
     if (data.orderType === "delivery") {
       if (!data.address?.trim()) {
         ctx.addIssue({
@@ -129,20 +150,6 @@ export const checkoutFormSchema = z
           path: ["areaLandmark"],
           message: "Area or landmark helps our rider find you.",
         });
-      }
-      if (data.mapPinUrl?.trim()) {
-        try {
-          const url = new URL(data.mapPinUrl.trim());
-          if (url.protocol !== "http:" && url.protocol !== "https:") {
-            throw new Error("bad protocol");
-          }
-        } catch {
-          ctx.addIssue({
-            code: "custom",
-            path: ["mapPinUrl"],
-            message: "Map pin must be a valid http(s) link.",
-          });
-        }
       }
     }
 
@@ -208,6 +215,7 @@ export const checkoutStep2Schema = z
     note: z.string().trim().max(300).optional(),
   })
   .superRefine((data, ctx) => {
+    refineMapPinUrl(data.mapPinUrl, ctx);
     if (data.orderType !== "delivery") return;
     if (!data.address?.trim()) {
       ctx.addIssue({
@@ -224,3 +232,23 @@ export const checkoutStep2Schema = z
       });
     }
   });
+
+export const STEP1_FIELDS = [
+  "orderType",
+  "timing",
+  "scheduledFor",
+] as const satisfies readonly (keyof CheckoutFormInput)[];
+
+export const STEP2_FIELDS = [
+  "orderType",
+  "customerName",
+  "customerPhone",
+  "customerEmail",
+  "address",
+  "areaLandmark",
+  "mapPinUrl",
+  "deliveryInstructions",
+  "tableNumber",
+  "partySize",
+  "note",
+] as const satisfies readonly (keyof CheckoutFormInput)[];

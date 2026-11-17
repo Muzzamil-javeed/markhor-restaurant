@@ -13,6 +13,8 @@ import {
   checkoutFormSchema,
   checkoutStep1Schema,
   checkoutStep2Schema,
+  STEP1_FIELDS,
+  STEP2_FIELDS,
   type CheckoutFormInput,
 } from "@/lib/checkout-schema";
 import { formatPKR } from "@/lib/format";
@@ -29,6 +31,23 @@ import {
 import { useOptionalTransitionNav } from "@/components/transition/TransitionProvider";
 import { useToastStore } from "@/store/toast";
 import { useCartHydration } from "@/store/use-cart-hydration";
+
+function applyStepErrors(
+  form: ReturnType<typeof useForm<CheckoutFormInput>>,
+  issues: { path: PropertyKey[]; message: string }[],
+) {
+  let focused = false;
+  for (const issue of issues) {
+    const path = issue.path[0];
+    if (typeof path !== "string") continue;
+    form.setError(
+      path as keyof CheckoutFormInput,
+      { type: "manual", message: issue.message },
+      { shouldFocus: !focused },
+    );
+    focused = true;
+  }
+}
 
 export function CheckoutForm() {
   const router = useRouter();
@@ -51,6 +70,7 @@ export function CheckoutForm() {
   const [step, setStep] = useState<CheckoutStep>(draftStep);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [stepError, setStepError] = useState<string | null>(null);
 
   const form = useForm<CheckoutFormInput>({
     resolver: zodResolver(checkoutFormSchema),
@@ -74,7 +94,9 @@ export function CheckoutForm() {
       voucherCode,
       lines,
     },
-    mode: "onSubmit",
+    mode: "onChange",
+    reValidateMode: "onChange",
+    criteriaMode: "firstError",
   });
 
   const watchedType = form.watch("orderType");
@@ -100,11 +122,12 @@ export function CheckoutForm() {
       watchedType,
       form.getValues("paymentMethod"),
     );
-    form.setValue("paymentMethod", nextPay);
+    form.setValue("paymentMethod", nextPay, { shouldValidate: true });
   }, [watchedType, setOrderType, form]);
 
   useEffect(() => {
     const subscription = form.watch((values) => {
+      setStepError(null);
       patchDraft({
         ...values,
         lines: undefined,
@@ -141,22 +164,19 @@ export function CheckoutForm() {
 
   const goNext = async () => {
     setSubmitError(null);
+    setStepError(null);
     const values = form.getValues();
+
     if (step === 1) {
+      form.clearErrors([...STEP1_FIELDS]);
       const result = checkoutStep1Schema.safeParse({
         orderType: values.orderType,
         timing: values.timing,
         scheduledFor: values.scheduledFor,
       });
       if (!result.success) {
-        for (const issue of result.error.issues) {
-          const path = issue.path[0];
-          if (typeof path === "string") {
-            form.setError(path as keyof CheckoutFormInput, {
-              message: issue.message,
-            });
-          }
-        }
+        applyStepErrors(form, result.error.issues);
+        setStepError("Please fix the highlighted fields before continuing.");
         return;
       }
       setStep(2);
@@ -165,6 +185,7 @@ export function CheckoutForm() {
     }
 
     if (step === 2) {
+      form.clearErrors([...STEP2_FIELDS]);
       const result = checkoutStep2Schema.safeParse({
         orderType: values.orderType,
         customerName: values.customerName,
@@ -179,18 +200,14 @@ export function CheckoutForm() {
         note: values.note,
       });
       if (!result.success) {
-        for (const issue of result.error.issues) {
-          const path = issue.path[0];
-          if (typeof path === "string") {
-            form.setError(path as keyof CheckoutFormInput, {
-              message: issue.message,
-            });
-          }
-        }
+        applyStepErrors(form, result.error.issues);
+        setStepError("Please fix the highlighted fields before continuing.");
         return;
       }
-      // Apply normalised phone into the form for later submit
-      form.setValue("customerPhone", result.data.customerPhone);
+      form.setValue("customerPhone", result.data.customerPhone, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
       setStep(3);
       setDraftStep(3);
     }
@@ -198,6 +215,7 @@ export function CheckoutForm() {
 
   const goBack = () => {
     setSubmitError(null);
+    setStepError(null);
     const next = (step - 1) as CheckoutStep;
     setStep(next);
     setDraftStep(next);
@@ -206,6 +224,7 @@ export function CheckoutForm() {
   const onPlaceOrder = form.handleSubmit(async (values) => {
     setSubmitting(true);
     setSubmitError(null);
+    setStepError(null);
     try {
       const payload = {
         ...values,
@@ -229,7 +248,6 @@ export function CheckoutForm() {
         showToast(message);
         return;
       }
-      // Clear cart only after a successful order response.
       clearCart();
       resetDraft();
       const next = `/order/${encodeURIComponent(data.orderCode)}?token=${encodeURIComponent(data.trackingToken)}`;
@@ -242,6 +260,8 @@ export function CheckoutForm() {
     } finally {
       setSubmitting(false);
     }
+  }, () => {
+    setStepError("Please fix the highlighted fields before placing the order.");
   });
 
   return (
@@ -259,18 +279,23 @@ export function CheckoutForm() {
         />
       ) : null}
 
+      {stepError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {stepError}
+        </p>
+      ) : null}
       {submitError ? (
         <p className="text-sm text-destructive" role="alert">
           {submitError}
         </p>
       ) : null}
 
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+      <div className="mt-2 flex flex-col-reverse gap-3 border-t border-line pt-5 sm:flex-row sm:justify-between">
         {step > 1 ? (
           <button
             type="button"
             onClick={goBack}
-            className="inline-flex h-12 items-center justify-center rounded-2xl border border-line px-5 text-sm font-semibold text-ink hover:bg-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+            className="ui-press inline-flex h-12 items-center justify-center rounded-full border border-line px-6 text-sm font-semibold text-ink transition-colors hover:bg-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           >
             Back
           </button>
@@ -282,15 +307,16 @@ export function CheckoutForm() {
           <button
             type="button"
             onClick={goNext}
-            className="inline-flex h-12 items-center justify-center rounded-2xl bg-brand px-5 text-sm font-semibold text-on-brand hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+            className="ui-press inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand px-7 text-sm font-semibold text-on-brand shadow-[0_10px_24px_rgba(94,15,29,0.22)] transition-colors hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           >
             Continue
+            <span aria-hidden>→</span>
           </button>
         ) : (
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex h-12 items-center justify-center rounded-2xl bg-brand px-5 text-sm font-semibold text-on-brand hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:opacity-60"
+            className="ui-press inline-flex h-12 items-center justify-center rounded-full bg-brand px-7 text-sm font-semibold text-on-brand shadow-[0_10px_24px_rgba(94,15,29,0.22)] transition-colors hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:opacity-60"
           >
             {submitting
               ? "Placing order…"
