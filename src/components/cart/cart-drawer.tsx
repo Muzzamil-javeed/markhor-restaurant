@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { TransitionLink } from "@/components/transition/TransitionLink";
-import { useCallback, useEffect, useId, useRef } from "react";
-import { ChevronLeft, ChevronRight, ShoppingBag, X } from "lucide-react";
+import { useEffect, useId } from "react";
+import { ShoppingBag, X } from "lucide-react";
 import { CartCheckoutButton } from "@/components/cart/cart-checkout-button";
 import { CartEmpty } from "@/components/cart/cart-empty";
 import { CartLineCard } from "@/components/cart/cart-line-card";
@@ -21,17 +21,6 @@ export function CartDrawer() {
   const hydrated = useCartHydration();
   const count = hydrated ? selectItemCount(lines) : 0;
   const titleId = useId();
-  const sliderRef = useRef<HTMLUListElement>(null);
-
-  const scrollSlider = useCallback((direction: -1 | 1) => {
-    const el = sliderRef.current;
-    if (!el) return;
-    const card = el.querySelector("li");
-    const step = card
-      ? card.getBoundingClientRect().width + 12
-      : el.clientWidth * 0.8;
-    el.scrollBy({ left: direction * step, behavior: "smooth" });
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -104,7 +93,7 @@ export function CartDrawer() {
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {!hydrated ? (
             <p className="px-5 py-8 text-sm text-muted" aria-busy>
               Loading cart…
@@ -114,55 +103,21 @@ export function CartDrawer() {
               <CartEmpty onBrowse={closeDrawer} />
             </div>
           ) : (
-            <>
-              <div className="px-5 pt-4">
-                <CartOrderType />
-              </div>
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pt-4 pb-5">
+              <CartOrderType />
 
-              <div className="relative mt-4 min-h-0">
-                <div className="mb-2 flex items-center justify-between px-5">
-                  <p className="font-eyebrow text-[10px] tracking-[0.18em] text-muted uppercase">
-                    Items
-                  </p>
-                  {lines.length > 1 ? (
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => scrollSlider(-1)}
-                        className="inline-flex size-8 items-center justify-center rounded-full border border-line bg-white text-ink transition-colors hover:bg-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-                        aria-label="Previous cart item"
-                      >
-                        <ChevronLeft className="size-4" aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => scrollSlider(1)}
-                        className="inline-flex size-8 items-center justify-center rounded-full border border-line bg-white text-ink transition-colors hover:bg-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-                        aria-label="Next cart item"
-                      >
-                        <ChevronRight className="size-4" aria-hidden />
-                      </button>
-                    </div>
-                  ) : (
-                    <p className="text-[11px] text-muted">Swipe</p>
-                  )}
-                </div>
-                <ul
-                  ref={sliderRef}
-                  className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-5 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                >
-                  {lines.map((line) => (
-                    <li
-                      key={line.key}
-                      className="w-[min(78%,18rem)] shrink-0 snap-center"
-                    >
-                      <CartLineCard line={line} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <p className="font-eyebrow mt-5 text-[10px] tracking-[0.18em] text-muted uppercase">
+                Items
+              </p>
+              <ul className="mt-3 flex flex-col gap-3">
+                {lines.map((line) => (
+                  <li key={line.key}>
+                    <CartLineCard line={line} />
+                  </li>
+                ))}
+              </ul>
 
-              <div className="mt-auto max-h-[52%] space-y-4 overflow-x-hidden overflow-y-auto border-t border-line bg-white px-5 pt-4 pb-5 [-ms-overflow-style:none] [scrollbar-width:thin]">
+              <div className="mt-5 space-y-4 border-t border-line pt-4">
                 <CartUpsell />
                 <CartVoucher />
                 <CartSummary />
@@ -176,7 +131,7 @@ export function CartDrawer() {
                   Open full cart page
                 </TransitionLink>
               </div>
-            </>
+            </div>
           )}
         </div>
       </aside>

@@ -13,14 +13,14 @@ export function CartLineCard({ line }: { line: CartLine }) {
   const slug = line.itemId;
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_10px_28px_rgba(36,26,27,0.06)] transition-shadow duration-300">
+    <article className="flex gap-3 overflow-hidden rounded-2xl border border-line bg-white p-3 shadow-[0_4px_14px_rgba(36,26,27,0.04)]">
       <MenuImage
         name={line.name}
         slug={slug}
-        rounded="rounded-none"
-        className="aspect-[16/10]"
+        rounded="rounded-xl"
+        className="size-20 shrink-0 !aspect-square"
       />
-      <div className="flex flex-col gap-3 p-3.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-2.5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-ink">{line.name}</p>
@@ -35,7 +35,7 @@ export function CartLineCard({ line }: { line: CartLine }) {
           </p>
         </div>
 
-        <div className="flex items-center justify-between gap-2">
+        <div className="mt-auto flex items-center justify-between gap-2">
           <QtyStepper
             label={line.name}
             value={line.quantity}
@@ -47,7 +47,7 @@ export function CartLineCard({ line }: { line: CartLine }) {
           <button
             type="button"
             onClick={() => remove(line.key)}
-            className="inline-flex size-10 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+            className="inline-flex size-9 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
             aria-label={`Remove ${line.name} from cart`}
           >
             <Trash2 className="size-4" aria-hidden />

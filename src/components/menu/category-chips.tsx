@@ -71,14 +71,34 @@ export function CategoryChips({
     const scroller = scrollerRef.current;
     const chip = activeRef.current;
     if (!scroller || !chip) return;
-    const target =
-      chip.offsetLeft - scroller.clientWidth / 2 + chip.offsetWidth / 2;
+
+    const firstId = categories[0]?.id;
+    if (activeId && activeId === firstId) {
+      scroller.scrollTo({ left: 0, behavior: "smooth" });
+      return;
+    }
+
+    const scrollerRect = scroller.getBoundingClientRect();
+    const chipRect = chip.getBoundingClientRect();
+    const pad = 8;
+    const fullyVisible =
+      chipRect.left >= scrollerRect.left + pad &&
+      chipRect.right <= scrollerRect.right - pad;
+    if (fullyVisible) return;
+
+    const chipLeftInScroller =
+      chipRect.left - scrollerRect.left + scroller.scrollLeft;
     const max = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+    let target = chipLeftInScroller - pad;
+    if (chipLeftInScroller > scroller.clientWidth * 0.45) {
+      target =
+        chipLeftInScroller - scroller.clientWidth / 2 + chipRect.width / 2;
+    }
     scroller.scrollTo({
       left: Math.min(max, Math.max(0, target)),
       behavior: "smooth",
     });
-  }, [activeId]);
+  }, [activeId, categories]);
 
   const scrollByDir = (dir: -1 | 1) => {
     const node = scrollerRef.current;
@@ -112,7 +132,7 @@ export function CategoryChips({
 
         <div
           ref={scrollerRef}
-          className="flex min-w-0 flex-1 gap-2 overflow-x-auto overscroll-x-contain py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="flex min-w-0 flex-1 gap-2 overflow-x-auto overscroll-x-contain scroll-pl-1 py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           style={{ scrollBehavior: "smooth" }}
           role="tablist"
           aria-label="Menu categories"

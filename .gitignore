@@ -64,3 +64,5 @@ lighthouse-home.html
 prisma/migrations_sqlite_backup/
 .env.vercel
 
+.vercel
+.env*
