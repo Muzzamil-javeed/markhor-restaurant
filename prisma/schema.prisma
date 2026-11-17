@@ -1,0 +1,124 @@
+// Prisma schema — SQLite for local, keep types Postgres-compatible.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Order {
+  id            String @id @default(cuid())
+  code          String @unique
+  trackingToken String @unique
+
+  /// received | preparing | ready | out_for_delivery | completed | cancelled
+  status String @default("received")
+  /// delivery | pickup | dinein
+  type String
+  /// asap | scheduled
+  timing       String    @default("asap")
+  scheduledFor DateTime?
+
+  customerName String
+  phone        String
+  email        String?
+
+  address              String?
+  area                 String?
+  mapPinUrl            String?
+  deliveryInstructions String?
+
+  tableNo   String?
+  partySize Int?
+
+  note String?
+  cancelReason String?
+
+  /// cash | counter | online
+  paymentMethod String
+  /// unpaid | pending | paid | failed | refunded
+  paymentStatus String @default("unpaid")
+
+  voucherCode String?
+
+  subtotal    Int
+  discount    Int
+  gst         Int
+  deliveryFee Int
+  total       Int
+
+  items         OrderItem[]
+  statusEvents  OrderStatusEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([status])
+  @@index([type])
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  itemId       String
+  /// Snapshot of menu item name at order time.
+  name         String
+  variantLabel String?
+  /// JSON array of choice labels/ids
+  choices      String @default("[]")
+  /// JSON array of add-on labels/ids
+  addOns       String @default("[]")
+  unitPrice    Int
+  qty          Int
+  lineTotal    Int
+  note         String?
+
+  @@index([orderId])
+}
+
+model OrderStatusEvent {
+  id      String   @id @default(cuid())
+  orderId String
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status  String
+  at      DateTime @default(now())
+
+  @@index([orderId, at])
+}
+
+/// Admin overrides without redeploying menu.ts
+model MenuOverride {
+  itemId        String   @id
+  available     Boolean  @default(true)
+  /// Soft-hide from the storefront menu
+  hidden        Boolean  @default(false)
+  priceOverride Int?
+  nameOverride  String?
+  /// Public path e.g. /images/menu/overrides/<itemId>.jpg
+  imagePath     String?
+  updatedAt     DateTime @updatedAt
+}
+
+/// Dishes added from admin (not in static menu.ts)
+model MenuCustomItem {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  categoryId  String
+  name        String
+  description String?
+  price       Int
+  available   Boolean  @default(true)
+  hidden      Boolean  @default(false)
+  imagePath   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([hidden])
+}

@@ -1,0 +1,49 @@
+---
+description: Markhor Restaurant ordering site — stack, brand, layout, and delivery rules
+alwaysApply: true
+---
+
+# Markhor Restaurant — project context
+
+Senior full-stack + UI work. Production-quality, mobile-first online ordering for Markhor Restaurant (Markhor Smoked Meat), a western / smokehouse restaurant in DHA Phase 6, Karachi, Pakistan.
+
+The live site (markhorsmokedmeat.com) only browses the menu and calls. Keep the SAME brand, content, and menu. Add: browse → customise → cart → checkout → confirmation → order tracking, plus a simple admin panel for orders.
+
+## Tech stack (do not change without asking)
+
+- Next.js 14+ (App Router) + TypeScript (strict)
+- Tailwind CSS + shadcn/ui + lucide-react + Framer Motion (subtle animations only)
+- Zustand for cart state, persisted to localStorage
+- Prisma ORM + SQLite for dev (schema must be Postgres-compatible)
+- Zod for validation (shared client/server)
+- React Hook Form
+- Fonts via `next/font`: Montserrat (brand/headings; wordmark letter-spacing `.22em`) and Source Sans 3 (body)
+
+## Brand
+
+- Colors as CSS variables and Tailwind theme tokens:
+  - background `#F6F4F2`
+  - ink `#241A1B`
+  - brand (deep maroon) `#5E0F1D`
+  - on-brand `#FFFFFF`
+  - muted `#74696B`
+  - line `#E2DCD9`
+  - tint `#F0E3E5`
+- Look: warm, premium smokehouse. Wood and charcoal mood, maroon accents, generous whitespace, large food photography areas, `rounded-2xl` cards, soft shadows, sticky 56px header.
+- Wordmark: `MARKHOR` in brand colour, letter-spacing `.22em`.
+- Images: `/public/images/menu/<slug>.jpg` placeholders. Use a tasteful maroon-tinted gradient placeholder with the item's initial until real photos are dropped in.
+- Logo: download `https://markhorsmokedmeat.com/wp-content/uploads/2022/12/LOGO-1.png` to `/public/logo.png`.
+
+## Product rules
+
+- Accessibility: WCAG AA contrast, visible focus rings, keyboard navigable, aria labels on all icon buttons.
+- Currency: `Rs. 1,210` (`en-PK`, no decimals). Store money as integer rupees.
+- Footer note wherever prices appear: "Prices are exclusive of GST. Items are subject to availability."
+
+## Engineering rules
+
+- Small, single-purpose components. No file over ~250 lines.
+- Layout: `src/app`, `src/components/{ui,layout,menu,cart,checkout,order,admin}`, `src/lib`, `src/store`, `src/data`, `prisma`.
+- All business rules live in `src/lib/` (pricing, vouchers, hours), never inside components.
+- No hardcoded secrets. Use `.env` + `.env.example`.
+- After each module: run `npm run build` and `npm run lint`, fix every error, then summarise what was built and how to test it.

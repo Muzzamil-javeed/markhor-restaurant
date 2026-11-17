@@ -1,0 +1,11 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <filter id="f" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="4" seed="7" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.9  0 0 0 0 0.55  0 0 0 0 0.35  0 0 0 0.45 0" result="c"/>
+      <feGaussianBlur in="c" stdDeviation="22"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="black"/>
+  <ellipse cx="800" cy="480" rx="700" ry="300" filter="url(#f)" opacity="0.65"/>
+</svg>
