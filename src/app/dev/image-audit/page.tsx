@@ -3,8 +3,6 @@ import { notFound } from "next/navigation";
 import { menu } from "@/data/menu";
 import { getItemImage } from "@/data/images";
 
-export const dynamic = "force-static";
-
 /** Dev-only contact sheet of all 116 dish photos. */
 export default function ImageAuditPage() {
   if (process.env.NODE_ENV === "production") {
