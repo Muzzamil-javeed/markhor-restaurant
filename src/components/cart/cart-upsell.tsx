@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MenuImage } from "@/components/menu/menu-image";
 import { cn } from "@/lib/cn";
 import { formatPKR } from "@/lib/format";
@@ -10,43 +11,92 @@ import {
   createDefaultSelection,
   unitPrice,
 } from "@/lib/pricing";
-import { suggestUpsells } from "@/lib/upsell";
+import {
+  MEAL_UPSELL_CATEGORIES,
+  suggestSoftDrinkUpsells,
+  suggestUpsells,
+} from "@/lib/upsell";
+import type { MenuItem } from "@/data/menu-types";
 import { useCartStore } from "@/store/cart";
 import { useCustomiseStore } from "@/store/customise";
 import { useToastStore } from "@/store/toast";
 
-export function CartUpsell({ tone = "light" }: { tone?: "light" | "dark" }) {
-  const lines = useCartStore((state) => state.lines);
+type CartUpsellProps = {
+  tone?: "light" | "dark";
+  title: string;
+  suggestions: MenuItem[];
+};
+
+function CartUpsellRail({ tone = "light", title, suggestions }: CartUpsellProps) {
   const add = useCartStore((state) => state.add);
   const openCustomise = useCustomiseStore((state) => state.open);
   const showToast = useToastStore((state) => state.show);
   const dark = tone === "dark";
+  const titleId = useId();
+  const scrollerRef = useRef<HTMLUListElement>(null);
+  const showArrows = suggestions.length > 2;
 
-  const suggestions = useMemo(
-    () => suggestUpsells(lines.map((line) => line.itemId), 3),
-    [lines],
-  );
+  const scrollByCard = (direction: -1 | 1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const card = el.querySelector("li");
+    const step = (card?.clientWidth ?? 180) + 12;
+    el.scrollBy({ left: direction * step * 2, behavior: "smooth" });
+  };
 
   if (suggestions.length === 0) return null;
 
   return (
-    <section aria-labelledby="cart-upsell-title" className="flex flex-col gap-3">
-      <h3
-        id="cart-upsell-title"
-        className={cn(
-          "font-eyebrow text-[10px] font-semibold tracking-[0.18em] uppercase",
-          dark
-            ? "text-cream/45"
-            : "font-heading text-sm tracking-normal text-ink normal-case",
-        )}
-      >
-        Complete your meal
-      </h3>
+    <section aria-labelledby={titleId} className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <h3
+          id={titleId}
+          className={cn(
+            "font-eyebrow text-[10px] font-semibold tracking-[0.18em] uppercase",
+            dark
+              ? "text-cream/45"
+              : "font-heading text-sm tracking-normal text-ink normal-case",
+          )}
+        >
+          {title}
+        </h3>
+        {showArrows ? (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              aria-label={`Previous ${title}`}
+              onClick={() => scrollByCard(-1)}
+              className={cn(
+                "inline-flex size-8 items-center justify-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2",
+                dark
+                  ? "border-cream/25 text-cream hover:bg-cream/10 focus-visible:ring-cream/40"
+                  : "border-line text-ink hover:bg-tint focus-visible:ring-brand/40",
+              )}
+            >
+              <ChevronLeft className="size-4" aria-hidden />
+            </button>
+            <button
+              type="button"
+              aria-label={`Next ${title}`}
+              onClick={() => scrollByCard(1)}
+              className={cn(
+                "inline-flex size-8 items-center justify-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2",
+                dark
+                  ? "border-cream/25 text-cream hover:bg-cream/10 focus-visible:ring-cream/40"
+                  : "border-line text-ink hover:bg-tint focus-visible:ring-brand/40",
+              )}
+            >
+              <ChevronRight className="size-4" aria-hidden />
+            </button>
+          </div>
+        ) : null}
+      </div>
+
       <ul
+        ref={scrollerRef}
         className={cn(
           "flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1",
           "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-          /* Keep last card fully visible inside the drawer */
           "pe-1",
         )}
       >
@@ -123,5 +173,34 @@ export function CartUpsell({ tone = "light" }: { tone?: "light" | "dark" }) {
         ))}
       </ul>
     </section>
+  );
+}
+
+export function CartUpsellBlocks({ tone = "light" }: { tone?: "light" | "dark" }) {
+  const lines = useCartStore((state) => state.lines);
+  const cartIds = useMemo(() => lines.map((line) => line.itemId), [lines]);
+
+  const mealSuggestions = useMemo(
+    () => suggestUpsells(cartIds, 3, MEAL_UPSELL_CATEGORIES),
+    [cartIds],
+  );
+  const drinkSuggestions = useMemo(
+    () => suggestSoftDrinkUpsells(cartIds, 15),
+    [cartIds],
+  );
+
+  return (
+    <div className="flex flex-col gap-5">
+      <CartUpsellRail
+        tone={tone}
+        title="Complete your meal"
+        suggestions={mealSuggestions}
+      />
+      <CartUpsellRail
+        tone={tone}
+        title="Soft drinks"
+        suggestions={drinkSuggestions}
+      />
+    </div>
   );
 }

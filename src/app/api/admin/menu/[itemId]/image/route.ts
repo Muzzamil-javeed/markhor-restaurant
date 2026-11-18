@@ -1,9 +1,8 @@
-import { mkdir } from "node:fs/promises";
-import path from "node:path";
 import sharp from "sharp";
 import { NextResponse } from "next/server";
 import { assertAdmin } from "@/lib/admin-auth";
 import { revalidateMenuCache } from "@/lib/menu-cache";
+import { storeMenuOverrideImage } from "@/lib/menu-image-storage";
 import {
   isKnownMenuItemId,
   staticItemById,
@@ -55,25 +54,13 @@ export async function POST(request: Request, context: RouteContext) {
 
   try {
     const bytes = Buffer.from(await file.arrayBuffer());
-    const dir = path.join(
-      process.cwd(),
-      "public",
-      "images",
-      "menu",
-      "overrides",
-    );
-    await mkdir(dir, { recursive: true });
-    const safeName = itemId.replace(/[^a-zA-Z0-9_-]/g, "_");
-    const filename = `${safeName}.jpg`;
-    const diskPath = path.join(dir, filename);
-
-    await sharp(bytes)
+    const jpeg = await sharp(bytes)
       .rotate()
       .resize(1200, 900, { fit: "cover" })
       .jpeg({ quality: 84 })
-      .toFile(diskPath);
+      .toBuffer();
 
-    const imagePath = `/images/menu/overrides/${filename}`;
+    const imagePath = await storeMenuOverrideImage({ itemId, jpeg });
     const isCustom = !staticItemById(itemId);
     const override = isCustom
       ? await updateCustomMenuItem(itemId, { imagePath })
@@ -82,7 +69,7 @@ export async function POST(request: Request, context: RouteContext) {
     revalidateMenuCache();
     return NextResponse.json({
       override,
-      imagePath: `${imagePath}?v=${Date.now()}`,
+      imagePath: `${imagePath}${imagePath.includes("?") ? "&" : "?"}v=${Date.now()}`,
     });
   } catch (error) {
     console.error("[admin/menu/:itemId/image]", error);

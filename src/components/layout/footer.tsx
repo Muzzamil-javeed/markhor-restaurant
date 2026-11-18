@@ -137,12 +137,12 @@ export function Footer() {
       </div>
 
       <div className="border-t border-cream/10">
-        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-3 px-4 py-5 font-mono text-[10px] tracking-wide text-cream/35 uppercase sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-3 px-4 py-5 font-mono text-[10px] tracking-wide text-white uppercase sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <p>© {year} Markhor Restaurant — Karachi</p>
           <p className="sm:text-center">{site.footer.note}</p>
           <p className="sm:text-right">
             Smoked low · Slow ·{" "}
-            <span className="border-b border-cream/50 font-bold text-cream/70">
+            <span className="border-b border-white font-bold text-white">
               Served hot
             </span>
           </p>

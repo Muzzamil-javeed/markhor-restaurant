@@ -9,7 +9,7 @@ import { CartEmpty } from "@/components/cart/cart-empty";
 import { CartLineCard } from "@/components/cart/cart-line-card";
 import { CartOrderType } from "@/components/cart/cart-order-type";
 import { CartSummary } from "@/components/cart/cart-summary";
-import { CartUpsell } from "@/components/cart/cart-upsell";
+import { CartUpsellBlocks } from "@/components/cart/cart-upsell";
 import { CartVoucher } from "@/components/cart/cart-voucher";
 import { selectItemCount, useCartStore } from "@/store/cart";
 import { useCartHydration } from "@/store/use-cart-hydration";
@@ -118,8 +118,9 @@ export function CartDrawer() {
               </ul>
 
               <div className="mt-5 space-y-4 border-t border-line pt-4">
-                <CartUpsell />
+                <CartUpsellBlocks />
                 <CartVoucher />
+
                 <CartSummary />
                 <CartCheckoutButton onNavigate={closeDrawer} />
                 <TransitionLink
