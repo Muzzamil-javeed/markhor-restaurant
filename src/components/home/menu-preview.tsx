@@ -5,6 +5,28 @@ import { Reveal } from "@/components/ui/reveal";
 import { SectionEyebrow } from "@/components/ui/section-eyebrow";
 import { homeMenuPreview } from "@/data/home-preview";
 import { site } from "@/data/site";
+import { cn } from "@/lib/cn";
+
+const PREVIEW_FRAMES = [
+  {
+    src: "/images/home/menu-preview.jpg",
+    alt: "Smokehouse grill",
+    tilt: "-rotate-2",
+    width: "w-[88%] self-end",
+  },
+  {
+    src: "/images/home/how-it-works.jpg",
+    alt: "Plated smoked meat",
+    tilt: "rotate-[1.5deg]",
+    width: "w-[82%] self-start",
+  },
+  {
+    src: "/images/home/sides-dark.png",
+    alt: "Smokehouse sides",
+    tilt: "rotate-2",
+    width: "w-[86%] self-end",
+  },
+] as const;
 
 export function HomeMenuPreview() {
   return (
@@ -34,28 +56,28 @@ export function HomeMenuPreview() {
             </BrandLink>
           </div>
 
-          <div className="relative hidden min-h-[28rem] lg:block">
-            <div className="absolute top-4 right-2 w-[85%] -rotate-2 overflow-hidden rounded-xl border border-line bg-white p-2 shadow-sm">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-ink">
-                <Image
-                  src="/images/home/menu-preview.jpg"
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="280px"
-                />
-              </div>
-            </div>
-            <div className="absolute right-8 bottom-6 w-[78%] rotate-2 overflow-hidden rounded-xl border border-line bg-white p-2 shadow-sm">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-ink">
-                <Image
-                  src="/images/home/sides-dark.png"
-                  alt=""
-                  fill
-                  className="object-cover object-center"
-                  sizes="260px"
-                />
-              </div>
+          <div className="relative hidden lg:block">
+            <div className="sticky top-24 flex flex-col gap-8">
+              {PREVIEW_FRAMES.map((frame) => (
+                <div
+                  key={frame.src}
+                  className={cn(
+                    "overflow-hidden rounded-xl border border-line bg-white p-2 shadow-sm",
+                    frame.tilt,
+                    frame.width,
+                  )}
+                >
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-transparent">
+                    <Image
+                      src={frame.src}
+                      alt={frame.alt}
+                      fill
+                      className="object-cover object-center"
+                      sizes="280px"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

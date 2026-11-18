@@ -20,7 +20,7 @@ export function HomePopularPicks() {
   const showToast = useToastStore((state) => state.show);
 
   return (
-    <section className="paper-texture bg-cream">
+    <section className="paper-texture bg-[#ebe3de]">
       <div className="mx-auto w-full max-w-[1100px] px-4 py-16 lg:py-20">
         <Reveal>
           <SectionEyebrow>Crowd favourites</SectionEyebrow>

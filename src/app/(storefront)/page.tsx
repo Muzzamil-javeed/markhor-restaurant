@@ -6,6 +6,7 @@ import { HomeMenuPreview } from "@/components/home/menu-preview";
 import { HomeOffersBoard } from "@/components/home/offers-board";
 import { HomePopularPicks } from "@/components/home/popular-picks";
 import { HomeTableAndReviews } from "@/components/home/table-and-reviews";
+import { HomeMarqueeRibbon } from "@/components/home/marquee-ribbon";
 import { HomeTicker } from "@/components/home/ticker";
 import { buildPageMetadata, SITE_TITLE } from "@/lib/seo";
 
@@ -17,7 +18,7 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default function Home() {
   return (
-    <main>
+    <main className="overflow-x-clip">
       <link
         rel="preload"
         as="image"
@@ -29,8 +30,9 @@ export default function Home() {
       <HomeTicker />
       <HomeOffersBoard />
       <HomeMenuPreview />
-      <HomeHowItWorks />
+      <HomeMarqueeRibbon />
       <HomePopularPicks />
+      <HomeHowItWorks />
       <HomeTableAndReviews />
       <HomeFindUs />
     </main>

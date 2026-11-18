@@ -58,11 +58,7 @@ export function HomeHowItWorks() {
             <Reveal key={step.n} as="li" delay={0.05 * index}>
               <article className="group relative flex min-h-[13.5rem] flex-col overflow-hidden rounded-2xl border border-cream/10 bg-[#140D0E]/60 px-5 pt-6 pb-5 transition-colors duration-300 hover:border-cream/25">
                 <span
-                  className="pointer-events-none absolute top-2 left-3 font-display text-[4.75rem] leading-none font-black tracking-tight select-none sm:text-[5.25rem]"
-                  style={{
-                    color: "transparent",
-                    WebkitTextStroke: "1.5px rgba(246,244,242,0.55)",
-                  }}
+                  className="how-step-neon pointer-events-none absolute top-2 left-3 font-display text-[4.75rem] leading-none font-black tracking-tight select-none sm:text-[5.25rem]"
                   aria-hidden
                 >
                   {step.n}

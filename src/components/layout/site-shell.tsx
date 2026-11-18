@@ -8,7 +8,7 @@ import { ToastViewport } from "@/components/ui/toast-viewport";
 
 export function SiteShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-background">
+    <div className="flex min-h-full flex-1 flex-col overflow-x-clip bg-background">
       <OfflineBanner />
       <Header />
       <div className="flex min-h-0 flex-1 flex-col pb-20 md:pb-0">

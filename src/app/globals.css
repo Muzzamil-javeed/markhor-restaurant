@@ -194,13 +194,31 @@
   animation-play-state: paused;
 }
 
+@keyframes marquee-ribbon {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-ribbon {
+  animation: marquee-ribbon 72s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee {
+  .animate-marquee,
+  .animate-marquee-ribbon {
     animation: none;
   }
 }
 
 /* —— Motion system (smooth, no jerk) —— */
+html {
+  overflow-x: clip;
+}
+
 :root {
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -544,6 +562,48 @@
   background: linear-gradient(180deg, #ecfdf5 0%, #faf7f5 48%);
 }
 
+/* How-it-works step numbers — black fill, warm border-only cafe flicker */
+.how-step-neon {
+  color: #000;
+  -webkit-text-stroke: 1.5px rgba(232, 120, 48, 0.75);
+  paint-order: stroke fill;
+  text-shadow: none;
+  animation: how-step-neon-flicker 4.2s linear infinite;
+}
+
+@keyframes how-step-neon-flicker {
+  0%,
+  19%,
+  21%,
+  23%,
+  25%,
+  54%,
+  56%,
+  100% {
+    -webkit-text-stroke-color: rgba(232, 120, 48, 0.82);
+    filter: drop-shadow(0 0 1.5px rgba(232, 120, 48, 0.55));
+  }
+  20%,
+  24%,
+  55% {
+    -webkit-text-stroke-color: rgba(255, 196, 140, 0.35);
+    filter: drop-shadow(0 0 0.5px rgba(232, 120, 48, 0.2));
+  }
+  22% {
+    -webkit-text-stroke-color: rgba(255, 214, 170, 0.95);
+    filter: drop-shadow(0 0 2.5px rgba(255, 180, 100, 0.7));
+  }
+  40%,
+  42% {
+    -webkit-text-stroke-color: rgba(232, 120, 48, 0.5);
+    filter: drop-shadow(0 0 1px rgba(232, 120, 48, 0.3));
+  }
+  41% {
+    -webkit-text-stroke-color: rgba(255, 200, 150, 0.9);
+    filter: drop-shadow(0 0 2px rgba(232, 120, 48, 0.65));
+  }
+}
+
 .hero-kenburns {
   opacity: 0;
   animation:
@@ -587,7 +647,8 @@
   .hero-smoke-haze,
   .hero-headline-hot,
   .hero-hanging-sign,
-  .admin-order-new-blink {
+  .admin-order-new-blink,
+  .how-step-neon {
     animation: none;
   }
 

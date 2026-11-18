@@ -71,7 +71,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body
-        className="flex min-h-full flex-col text-ink"
+        className="flex min-h-full flex-col overflow-x-clip text-ink"
         suppressHydrationWarning
       >
         <style

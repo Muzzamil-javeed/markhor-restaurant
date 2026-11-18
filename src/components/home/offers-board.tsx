@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useSyncExternalStore, type ComponentType } from "react";
 import {
+  Camera,
   Coffee,
   Copy,
   Dices,
@@ -11,6 +11,7 @@ import {
   type LucideProps,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { OffersCoverflow } from "@/components/home/offers-coverflow";
 import { SectionEyebrow } from "@/components/ui/section-eyebrow";
 import { Reveal } from "@/components/ui/reveal";
 import { StatusPulse } from "@/components/ui/status-pulse";
@@ -86,11 +87,21 @@ export function HomeOffersBoard() {
       status: { live: true, label: "At the table" },
       Icon: Dices,
     },
+    {
+      id: "insta-story",
+      title: "Post an Insta story, unlock a surprise",
+      detail:
+        site.perks.find((p) => p.id === "insta-story")?.body ??
+        "Share your Markhor experience on your Instagram story and unlock a surprise.",
+      code: null,
+      status: { live: true, label: "Stamp" },
+      Icon: Camera,
+    },
   ];
 
   return (
-    <section className="paper-texture bg-cream">
-      <div className="mx-auto grid w-full max-w-[1100px] gap-10 px-4 py-16 lg:grid-cols-2 lg:gap-14 lg:py-20">
+    <section className="paper-texture overflow-x-clip bg-cream">
+      <div className="mx-auto grid w-full max-w-[1100px] items-start gap-10 px-4 py-16 lg:grid-cols-2 lg:gap-14 lg:py-20">
         <Reveal>
           <SectionEyebrow>Today&apos;s board</SectionEyebrow>
           <h2 className="font-display mt-3 text-4xl leading-[1.05] tracking-tight text-ink uppercase sm:text-5xl">
@@ -111,26 +122,7 @@ export function HomeOffersBoard() {
             </li>
           </ul>
 
-          <div className="mt-8 grid max-w-md grid-cols-2 gap-3 sm:gap-4">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-line shadow-[0_12px_28px_rgba(36,26,27,0.08)]">
-              <Image
-                src="/images/home/menu-preview.jpg"
-                alt=""
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 45vw, 200px"
-              />
-            </div>
-            <div className="relative mt-[50%] aspect-[4/5] overflow-hidden rounded-2xl border border-line shadow-[0_12px_28px_rgba(36,26,27,0.08)]">
-              <Image
-                src="/images/home/how-it-works.jpg"
-                alt=""
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 45vw, 200px"
-              />
-            </div>
-          </div>
+          <OffersCoverflow />
         </Reveal>
 
         <motion.div
@@ -141,7 +133,7 @@ export function HomeOffersBoard() {
             duration: reduce ? 0.2 : 0.7,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="relative overflow-hidden rounded-[1.75rem] border border-[#5a3d2e]/40 bg-[#1a1212] p-5 text-cream shadow-[0_24px_60px_rgba(20,13,14,0.28)] sm:rounded-[2rem] sm:p-6"
+          className="relative w-full self-start overflow-hidden rounded-[1.75rem] border border-[#5a3d2e]/40 bg-[#1a1212] p-5 text-cream shadow-[0_24px_60px_rgba(20,13,14,0.28)] sm:rounded-[2rem] sm:p-6"
         >
           <div
             className="pointer-events-none absolute inset-0 opacity-40"
