@@ -16,17 +16,19 @@ export default function AdminLayout({
     html.classList.add("mk-ready");
     const prevHtml = html.style.backgroundColor;
     const prevBody = document.body.style.backgroundColor;
-    html.style.backgroundColor = "#f3eee9";
-    document.body.style.backgroundColor = "#f3eee9";
+    const isLogin = pathname.startsWith("/admin/login");
+    const tone = isLogin ? "#140D0E" : "#f3eee9";
+    html.style.backgroundColor = tone;
+    document.body.style.backgroundColor = tone;
     return () => {
       html.style.backgroundColor = prevHtml;
       document.body.style.backgroundColor = prevBody;
     };
-  }, []);
+  }, [pathname]);
 
   if (pathname.startsWith("/admin/login")) {
     return (
-      <div className="min-h-dvh bg-[#f3eee9] text-ink">{children}</div>
+      <div className="min-h-dvh bg-[#140D0E] text-cream">{children}</div>
     );
   }
   return <AdminShell>{children}</AdminShell>;

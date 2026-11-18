@@ -29,6 +29,7 @@ type Props = {
     cancelReason?: string,
   ) => Promise<void>;
   busy?: boolean;
+  isNew?: boolean;
 };
 
 const typeIcon: Record<OrderType, ComponentType<LucideProps>> = {
@@ -37,7 +38,7 @@ const typeIcon: Record<OrderType, ComponentType<LucideProps>> = {
   dinein: Utensils,
 };
 
-export function AdminOrderCard({ order, onStatus, busy }: Props) {
+export function AdminOrderCard({ order, onStatus, busy, isNew }: Props) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [reason, setReason] = useState("");
   const next = allowedNextStatuses(
@@ -55,12 +56,26 @@ export function AdminOrderCard({ order, onStatus, busy }: Props) {
       : null);
 
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-line bg-[#faf7f5] p-3.5">
+    <article
+      className={cn(
+        "flex flex-col gap-3 rounded-2xl border bg-white p-3.5 shadow-[0_8px_22px_rgba(36,26,27,0.05)] transition-[border-color,box-shadow,background] duration-300",
+        isNew
+          ? "admin-order-new-blink"
+          : "border-line hover:border-brand/20 hover:shadow-[0_12px_28px_rgba(36,26,27,0.08)]",
+      )}
+    >
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-heading text-base font-semibold tracking-tight text-ink">
-            {order.code}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-heading text-base font-semibold tracking-tight text-ink">
+              {order.code}
+            </p>
+            {isNew ? (
+              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-emerald-700 uppercase">
+                New
+              </span>
+            ) : null}
+          </div>
           <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
             <span className="inline-flex items-center gap-1">
               <TypeIcon className="size-3.5 text-brand" aria-hidden />
@@ -77,7 +92,7 @@ export function AdminOrderCard({ order, onStatus, busy }: Props) {
         </p>
       </header>
 
-      <ul className="space-y-2 border-t border-line pt-3 text-sm">
+      <ul className="space-y-2 rounded-xl bg-[#faf7f5] px-3 py-2.5 text-sm">
         {order.items.map((item, index) => (
           <li key={`${item.name}-${index}`} className="leading-snug">
             <span className="font-medium text-ink">
@@ -98,7 +113,7 @@ export function AdminOrderCard({ order, onStatus, busy }: Props) {
       </ul>
 
       {order.note ? (
-        <p className="flex items-start gap-2 rounded-xl bg-tint px-3 py-2.5 text-xs text-ink">
+        <p className="flex items-start gap-2 rounded-xl border border-brand/10 bg-tint px-3 py-2.5 text-xs text-ink">
           <StickyNote
             className="mt-0.5 size-3.5 shrink-0 text-brand"
             aria-hidden
@@ -110,7 +125,7 @@ export function AdminOrderCard({ order, onStatus, busy }: Props) {
         </p>
       ) : null}
 
-      <div className="space-y-2 border-t border-line pt-3 text-sm">
+      <div className="space-y-2 text-sm">
         <a
           href={`tel:${order.phone}`}
           className="flex items-start gap-2 font-medium text-brand transition-colors hover:text-brand/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
@@ -158,7 +173,7 @@ export function AdminOrderCard({ order, onStatus, busy }: Props) {
             type="button"
             disabled={busy}
             onClick={() => void onStatus(order, status)}
-            className="inline-flex h-9 items-center rounded-full bg-brand px-3.5 text-xs font-semibold text-on-brand transition-colors hover:bg-brand/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+            className="ui-press inline-flex h-9 items-center rounded-full bg-brand px-3.5 text-xs font-semibold text-on-brand shadow-[0_6px_14px_rgba(94,15,29,0.22)] transition-colors hover:bg-brand/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           >
             {orderStatusLabels[status]}
           </button>
@@ -176,7 +191,7 @@ export function AdminOrderCard({ order, onStatus, busy }: Props) {
         ) : null}
         <Link
           href={`/admin/orders/${order.id}`}
-          className="inline-flex h-9 items-center gap-1 rounded-full border border-line px-3.5 text-xs font-semibold text-ink transition-colors hover:bg-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+          className="inline-flex h-9 items-center gap-1 rounded-full border border-line bg-[#faf7f5] px-3.5 text-xs font-semibold text-ink transition-colors hover:bg-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
         >
           <Ticket className="size-3.5" aria-hidden />
           Ticket

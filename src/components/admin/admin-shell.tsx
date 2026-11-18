@@ -49,14 +49,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#f3eee9] text-ink">
-      <header className="sticky top-0 z-30 border-b border-line bg-[#f3eee9]/95 backdrop-blur">
-        <div className="flex h-14 w-full items-center gap-3 px-4 sm:px-6">
+    <div className="relative flex min-h-dvh flex-col bg-[#f3eee9] text-ink">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(94,15,29,0.05),transparent_55%),linear-gradient(180deg,#f7f2ee_0%,#f3eee9_40%,#efe8e2_100%)]"
+      />
+      <header className="sticky top-0 z-30 border-b border-line/80 bg-[#f3eee9]/90 shadow-[0_8px_24px_rgba(36,26,27,0.04)] backdrop-blur-md">
+        <div className="relative flex h-14 w-full items-center gap-3 px-4 sm:px-6">
           <Link
             href="/admin/orders"
             className="inline-flex shrink-0 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           >
-            <span className="relative flex size-8 items-center justify-center overflow-hidden rounded-full border border-brand/20 bg-white">
+            <span className="relative flex size-8 items-center justify-center overflow-hidden rounded-full border border-brand/20 bg-white shadow-sm">
               <Image
                 src="/logo.png"
                 alt=""
@@ -84,8 +88,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   className={cn(
                     "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40",
                     active
-                      ? "bg-brand text-on-brand"
-                      : "text-ink/75 hover:bg-white/80 hover:text-ink",
+                      ? "bg-brand text-on-brand shadow-[0_6px_14px_rgba(94,15,29,0.22)]"
+                      : "text-ink/75 hover:bg-white/90 hover:text-ink",
                   )}
                 >
                   <Icon className="size-3.5" aria-hidden />
@@ -98,7 +102,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={() => void logout()}
-            className="ml-auto inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-line bg-white px-3 text-sm font-medium transition-colors hover:bg-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+            className="ml-auto inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-line bg-white px-3 text-sm font-medium shadow-sm transition-colors hover:bg-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           >
             <LogOut className="size-3.5" aria-hidden />
             Log out
@@ -106,7 +110,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <div className="w-full flex-1 px-4 py-5 sm:px-6">{children}</div>
+      <div className="relative w-full flex-1 px-4 py-5 sm:px-6">{children}</div>
       <ToastViewport />
     </div>
   );

@@ -17,7 +17,7 @@ import {
   Truck,
   type LucideProps,
 } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import {
   DailySummary,
   type DailySummaryData,
@@ -33,15 +33,17 @@ const COLUMNS: {
   key: OrderStatus;
   label: string;
   Icon: ComponentType<LucideProps>;
+  accent: string;
 }[] = [
-  { key: "received", label: "New", Icon: Inbox },
-  { key: "preparing", label: "Preparing", Icon: ChefHat },
-  { key: "ready", label: "Ready", Icon: Package },
-  { key: "out_for_delivery", label: "Out", Icon: Truck },
-  { key: "completed", label: "Completed", Icon: CheckCircle2 },
+  { key: "received", label: "New", Icon: Inbox, accent: "bg-emerald-500/15 text-emerald-700" },
+  { key: "preparing", label: "Preparing", Icon: ChefHat, accent: "bg-amber-500/15 text-amber-800" },
+  { key: "ready", label: "Ready", Icon: Package, accent: "bg-sky-500/15 text-sky-800" },
+  { key: "out_for_delivery", label: "Out", Icon: Truck, accent: "bg-brand/10 text-brand" },
+  { key: "completed", label: "Completed", Icon: CheckCircle2, accent: "bg-ink/10 text-ink" },
 ];
 
 const POLL_MS = 10_000;
+const ease = [0.22, 1, 0.36, 1] as const;
 
 export function OrdersBoard() {
   const router = useRouter();
@@ -52,6 +54,7 @@ export function OrdersBoard() {
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [blinkIds, setBlinkIds] = useState<Set<string>>(() => new Set());
   const knownIds = useRef<Set<string> | null>(null);
   const primed = useRef(false);
 
@@ -88,7 +91,22 @@ export function OrdersBoard() {
           (order) =>
             order.status === "received" && !knownIds.current!.has(order.id),
         );
-        if (fresh.length > 0) playNewOrderChime();
+        if (fresh.length > 0) {
+          playNewOrderChime();
+          const freshIds = fresh.map((order) => order.id);
+          setBlinkIds((current) => {
+            const next = new Set(current);
+            for (const id of freshIds) next.add(id);
+            return next;
+          });
+          window.setTimeout(() => {
+            setBlinkIds((current) => {
+              const next = new Set(current);
+              for (const id of freshIds) next.delete(id);
+              return next;
+            });
+          }, 4500);
+        }
       }
 
       knownIds.current = nextIds;
@@ -172,13 +190,13 @@ export function OrdersBoard() {
             Live orders
           </h1>
           <p className="mt-1 text-sm text-muted">
-            Auto-refreshes every 10 seconds. New orders chime.
+            Auto-refreshes every 10s · new orders chime + green blink
           </p>
         </div>
         <button
           type="button"
           onClick={() => void refresh()}
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-white px-4 text-sm font-semibold text-ink transition-colors hover:bg-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+          className="ui-press inline-flex h-10 items-center gap-2 rounded-full border border-line bg-white px-4 text-sm font-semibold text-ink shadow-sm transition-colors hover:bg-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
         >
           <RefreshCw
             className={cn("size-4", refreshing && "animate-spin")}
@@ -199,69 +217,99 @@ export function OrdersBoard() {
         </p>
       ) : null}
 
-      <div
-        className={cn(
-          "flex gap-4 overflow-x-auto scroll-smooth pb-3",
-          /* Soft scrollbar so staff know more columns exist */
-          "snap-x snap-mandatory",
-          "[scrollbar-color:rgba(94,15,29,0.35)_transparent] [scrollbar-width:thin]",
-          "[&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-brand/35",
-        )}
-      >
-        {COLUMNS.map((column) => {
-          const columnOrders = orders.filter(
-            (order) => order.status === column.key,
-          );
-          const Icon = column.Icon;
-          return (
-            <section
-              key={column.key}
-              /* 4 columns fit the board; 5th scrolls into view */
-              className="flex w-[19rem] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-[0_10px_28px_rgba(36,26,27,0.05)]"
-              aria-label={column.label}
-            >
-              <div className="flex items-center justify-between gap-2 border-b border-line bg-[#faf7f5] px-3.5 py-3">
-                <p className="inline-flex min-w-0 items-center gap-2 font-heading text-sm font-semibold text-ink">
-                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-tint text-brand">
-                    <Icon className="size-3.5" aria-hidden />
-                  </span>
-                  <span className="truncate">{column.label}</span>
-                </p>
-                <span className="shrink-0 rounded-full bg-ink px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-cream">
-                  {columnOrders.length}
-                </span>
-              </div>
-
-              <div className="flex max-h-[min(70vh,42rem)] flex-1 flex-col gap-3 overflow-y-auto p-3 [-ms-overflow-style:none] [scrollbar-width:thin]">
-                {columnOrders.length === 0 ? (
-                  <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-line bg-[#faf7f5]/80 px-4 py-10 text-center text-xs text-muted">
-                    No orders here
-                  </div>
-                ) : (
-                  columnOrders.map((order, index) => (
-                    <motion.div
-                      key={order.id}
-                      initial={reduce ? false : { opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: reduce ? 0.15 : 0.35,
-                        delay: reduce ? 0 : Math.min(index, 6) * 0.04,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                    >
-                      <AdminOrderCard
-                        order={order}
-                        busy={busyId === order.id}
-                        onStatus={onStatus}
-                      />
-                    </motion.div>
-                  ))
+      <LayoutGroup id="kitchen-board">
+        <div
+          className={cn(
+            "flex gap-4 overflow-x-auto scroll-smooth pb-3",
+            "snap-x snap-mandatory",
+            "[scrollbar-color:rgba(94,15,29,0.35)_transparent] [scrollbar-width:thin]",
+            "[&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-brand/35",
+          )}
+        >
+          {COLUMNS.map((column) => {
+            const columnOrders = orders.filter(
+              (order) => order.status === column.key,
+            );
+            const Icon = column.Icon;
+            const hasNewBlink =
+              column.key === "received" &&
+              columnOrders.some((order) => blinkIds.has(order.id));
+            return (
+              <section
+                key={column.key}
+                className={cn(
+                  "flex w-[19.5rem] shrink-0 snap-start flex-col overflow-hidden rounded-[1.35rem] border bg-white shadow-[0_12px_32px_rgba(36,26,27,0.06)] transition-colors duration-300",
+                  hasNewBlink
+                    ? "border-emerald-400/60"
+                    : "border-line",
                 )}
-              </div>
-            </section>
-          );
-        })}
-      </div>
+                aria-label={column.label}
+              >
+                <div className="flex items-center justify-between gap-2 border-b border-line bg-gradient-to-b from-[#faf7f5] to-white px-3.5 py-3">
+                  <p className="inline-flex min-w-0 items-center gap-2 font-heading text-sm font-semibold text-ink">
+                    <span
+                      className={cn(
+                        "inline-flex size-7 shrink-0 items-center justify-center rounded-full",
+                        column.accent,
+                      )}
+                    >
+                      <Icon className="size-3.5" aria-hidden />
+                    </span>
+                    <span className="truncate">{column.label}</span>
+                  </p>
+                  <span className="shrink-0 rounded-full bg-ink px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-cream">
+                    {columnOrders.length}
+                  </span>
+                </div>
+
+                <div className="flex max-h-[min(70vh,42rem)] flex-1 flex-col gap-3 overflow-y-auto p-3 [-ms-overflow-style:none] [scrollbar-width:thin]">
+                  {columnOrders.length === 0 ? (
+                    <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-line bg-[#faf7f5]/80 px-4 py-10 text-center text-xs text-muted">
+                      No orders here
+                    </div>
+                  ) : (
+                    <AnimatePresence mode="popLayout" initial={false}>
+                      {columnOrders.map((order) => (
+                        <motion.div
+                          key={order.id}
+                          layout={!reduce}
+                          layoutId={reduce ? undefined : order.id}
+                          initial={
+                            reduce
+                              ? false
+                              : { opacity: 0, y: 18, scale: 0.97 }
+                          }
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={
+                            reduce
+                              ? undefined
+                              : { opacity: 0, y: -10, scale: 0.96 }
+                          }
+                          transition={{
+                            layout: {
+                              duration: 0.42,
+                              ease,
+                            },
+                            duration: reduce ? 0.12 : 0.35,
+                            ease,
+                          }}
+                        >
+                          <AdminOrderCard
+                            order={order}
+                            busy={busyId === order.id}
+                            isNew={blinkIds.has(order.id)}
+                            onStatus={onStatus}
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  )}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      </LayoutGroup>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export type DailySummaryData = {
 };
 
 const cardClass =
-  "flex items-start gap-3 rounded-2xl border border-line bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(36,26,27,0.04)]";
+  "flex items-start gap-3 rounded-2xl border border-line bg-white px-4 py-3.5 shadow-[0_8px_22px_rgba(36,26,27,0.05)]";
 
 export function DailySummary({ summary }: { summary: DailySummaryData | null }) {
   if (!summary) {
