@@ -3,10 +3,17 @@
 import { create } from "zustand";
 import type { MenuItem } from "@/data/menu-types";
 
+/** MenuItem plus optional admin upload paths from getRuntimeMenu. */
+type CustomiseItem = MenuItem & {
+  imageSrc?: string | null;
+  imageSquareSrc?: string | null;
+  imageThumbSrc?: string | null;
+};
+
 type CustomiseState = {
   itemId: string | null;
-  itemSnapshot: MenuItem | null;
-  open: (itemId: string, item?: MenuItem) => void;
+  itemSnapshot: CustomiseItem | null;
+  open: (itemId: string, item?: CustomiseItem) => void;
   close: () => void;
 };
 

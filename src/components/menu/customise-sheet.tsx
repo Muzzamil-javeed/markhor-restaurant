@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { CustomiseOptions } from "@/components/menu/customise-options";
 import { MenuImage } from "@/components/menu/menu-image";
+import { useResolvedMenuImage } from "@/components/menu/menu-image-map-provider";
 import { QtyStepper } from "@/components/menu/qty-stepper";
 import { menu } from "@/data/menu";
 import type { MenuItem } from "@/data/menu-types";
@@ -36,11 +37,33 @@ export function CustomiseSheet() {
   return <CustomiseSheetPanel key={itemId} item={item} />;
 }
 
-function CustomiseSheetPanel({ item }: { item: MenuItem }) {
+type CustomiseItem = MenuItem & {
+  imageSrc?: string | null;
+  imageSquareSrc?: string | null;
+  imageThumbSrc?: string | null;
+};
+
+function itemUploadPaths(item: CustomiseItem) {
+  return {
+    imageSrc: item.imageSrc ?? null,
+    imageSquareSrc: item.imageSquareSrc ?? null,
+    imageThumbSrc: item.imageThumbSrc ?? null,
+  };
+}
+
+function CustomiseSheetPanel({ item }: { item: CustomiseItem }) {
   const close = useCustomiseStore((state) => state.close);
   const addItem = useCartStore((state) => state.addItem);
   const showToast = useToastStore((state) => state.show);
   const titleId = useId();
+  const upload = itemUploadPaths(item);
+  const resolvedImage = useResolvedMenuImage({
+    id: item.id,
+    slug: item.slug,
+    imageSrc: upload.imageSrc,
+    imageSquareSrc: upload.imageSquareSrc,
+    imageThumbSrc: upload.imageThumbSrc,
+  });
   const [selection, setSelection] = useState<ItemSelection>(() =>
     createDefaultSelection(item),
   );
@@ -80,6 +103,7 @@ function CustomiseSheetPanel({ item }: { item: MenuItem }) {
       summary: summary || undefined,
       unitPrice: perUnit,
       quantity: selection.quantity,
+      imageSrc: resolvedImage?.imageSrc ?? null,
       variantId: selection.variantId,
       choiceIds: selection.choiceIds,
       addOnIds: selection.addOnIds,
@@ -132,6 +156,10 @@ function CustomiseSheetPanel({ item }: { item: MenuItem }) {
           <MenuImage
             name={item.name}
             slug={item.slug}
+            itemId={item.id}
+            imageSrc={upload.imageSrc}
+            imageSquareSrc={upload.imageSquareSrc}
+            imageThumbSrc={upload.imageThumbSrc}
             className="mb-4 aspect-[16/9]"
           />
           {item.description ? (

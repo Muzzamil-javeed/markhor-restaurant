@@ -2,6 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { menu } from "@/data/menu";
 import type { Category, MenuItem } from "@/data/menu-types";
 import { stockImageForSlug } from "@/data/menu-photos";
+import { hasImageQuery } from "@/data/images";
 import { slugify } from "@/data/slug";
 import { prisma } from "@/lib/db";
 import { MENU_CACHE_TAG } from "@/lib/menu-cache";
@@ -13,11 +14,17 @@ export type MenuOverrideRow = {
   priceOverride: number | null;
   nameOverride: string | null;
   imagePath: string | null;
+  imageSquarePath?: string | null;
+  imageThumbPath?: string | null;
+  imageSource?: string | null;
 };
 
 export type RuntimeMenuItem = MenuItem & {
   effectivePrice: number;
   imageSrc?: string | null;
+  imageSquareSrc?: string | null;
+  imageThumbSrc?: string | null;
+  imageSource?: string | null;
 };
 
 export type CustomMenuItemRow = {
@@ -30,6 +37,9 @@ export type CustomMenuItemRow = {
   available: boolean;
   hidden: boolean;
   imagePath: string | null;
+  imageSquarePath?: string | null;
+  imageThumbPath?: string | null;
+  imageSource?: string | null;
 };
 
 function applyOverride(
@@ -50,6 +60,9 @@ function applyOverride(
     price: effectivePrice,
     effectivePrice,
     imageSrc: override?.imagePath ?? null,
+    imageSquareSrc: override?.imageSquarePath ?? null,
+    imageThumbSrc: override?.imageThumbPath ?? null,
+    imageSource: override?.imageSource ?? null,
   };
 }
 
@@ -71,6 +84,9 @@ function applyCustom(row: CustomMenuItemRow): RuntimeMenuItem | null {
     ...base,
     effectivePrice: row.price,
     imageSrc: row.imagePath ?? null,
+    imageSquareSrc: row.imageSquarePath ?? null,
+    imageThumbSrc: row.imageThumbPath ?? null,
+    imageSource: row.imageSource ?? null,
   };
 }
 
@@ -183,6 +199,9 @@ export async function upsertMenuOverride(input: {
   priceOverride?: number | null;
   nameOverride?: string | null;
   imagePath?: string | null;
+  imageSquarePath?: string | null;
+  imageThumbPath?: string | null;
+  imageSource?: string | null;
 }) {
   const existing = await prisma.menuOverride.findUnique({
     where: { itemId: input.itemId },
@@ -197,6 +216,9 @@ export async function upsertMenuOverride(input: {
       priceOverride: input.priceOverride ?? null,
       nameOverride: input.nameOverride ?? null,
       imagePath: input.imagePath ?? null,
+      imageSquarePath: input.imageSquarePath ?? null,
+      imageThumbPath: input.imageThumbPath ?? null,
+      imageSource: input.imageSource ?? null,
     },
     update: {
       ...(input.available !== undefined ? { available: input.available } : {}),
@@ -210,6 +232,15 @@ export async function upsertMenuOverride(input: {
         ? { nameOverride: input.nameOverride }
         : {}),
       ...(input.imagePath !== undefined ? { imagePath: input.imagePath } : {}),
+      ...(input.imageSquarePath !== undefined
+        ? { imageSquarePath: input.imageSquarePath }
+        : {}),
+      ...(input.imageThumbPath !== undefined
+        ? { imageThumbPath: input.imageThumbPath }
+        : {}),
+      ...(input.imageSource !== undefined
+        ? { imageSource: input.imageSource }
+        : {}),
     },
   });
 }
@@ -282,6 +313,9 @@ export async function updateCustomMenuItem(
     hidden?: boolean;
     description?: string | null;
     imagePath?: string | null;
+    imageSquarePath?: string | null;
+    imageThumbPath?: string | null;
+    imageSource?: string | null;
   },
 ) {
   return prisma.menuCustomItem.update({
@@ -295,6 +329,15 @@ export async function updateCustomMenuItem(
         ? { description: input.description?.trim() || null }
         : {}),
       ...(input.imagePath !== undefined ? { imagePath: input.imagePath } : {}),
+      ...(input.imageSquarePath !== undefined
+        ? { imageSquarePath: input.imageSquarePath }
+        : {}),
+      ...(input.imageThumbPath !== undefined
+        ? { imageThumbPath: input.imageThumbPath }
+        : {}),
+      ...(input.imageSource !== undefined
+        ? { imageSource: input.imageSource }
+        : {}),
     },
   });
 }
@@ -314,6 +357,8 @@ export function previewImageForAdmin(input: {
   hasStaticPhoto: boolean;
 }) {
   if (input.imagePath) return input.imagePath;
-  if (input.hasStaticPhoto) return `/images/menu/${input.slug}.jpg`;
+  if (input.hasStaticPhoto || hasImageQuery(input.slug)) {
+    return `/images/menu/${input.slug}.webp`;
+  }
   return stockImageForSlug(input.slug);
 }

@@ -51,6 +51,7 @@ export async function GET(request: Request) {
         priceOverride: override?.priceOverride ?? null,
         nameOverride: override?.nameOverride ?? null,
         imagePath: override?.imagePath ?? null,
+        hasStaticPhoto: menuPhotoSlugs.has(item.slug),
         previewImage: previewImageForAdmin({
           slug: item.slug,
           imagePath: override?.imagePath ?? null,
@@ -75,6 +76,7 @@ export async function GET(request: Request) {
     priceOverride: null as number | null,
     nameOverride: null as string | null,
     imagePath: item.imagePath,
+    hasStaticPhoto: false,
     previewImage: previewImageForAdmin({
       slug: item.slug,
       imagePath: item.imagePath,

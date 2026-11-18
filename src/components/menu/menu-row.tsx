@@ -1,6 +1,7 @@
 "use client";
 
 import { Minus, Plus } from "lucide-react";
+import { useResolvedMenuImage } from "@/components/menu/menu-image-map-provider";
 import type { MenuItem } from "@/data/menu-types";
 import { cn } from "@/lib/cn";
 import { formatPKR } from "@/lib/format";
@@ -38,6 +39,10 @@ export function MenuRow({ item }: { item: MenuItem }) {
   const setQuantity = useCartStore((state) => state.setQuantity);
   const openCustomise = useCustomiseStore((state) => state.open);
   const showToast = useToastStore((state) => state.show);
+  const resolvedImage = useResolvedMenuImage({
+    id: item.id,
+    slug: item.slug,
+  });
 
   const customise = needsCustomisation(item);
   const selection = createDefaultSelection(item);
@@ -55,6 +60,7 @@ export function MenuRow({ item }: { item: MenuItem }) {
       name: item.name,
       unitPrice: unitPrice(item, selection),
       summary: hint || undefined,
+      imageSrc: resolvedImage?.imageSrc ?? null,
     });
     showToast(`Added ${item.name}`);
   };

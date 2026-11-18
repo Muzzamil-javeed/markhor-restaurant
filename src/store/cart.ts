@@ -25,6 +25,8 @@ export type CartLine = {
   summary?: string;
   unitPrice: number;
   quantity: number;
+  /** Admin-uploaded (or resolved) dish photo for cart / checkout. */
+  imageSrc?: string | null;
   variantId?: string | null;
   choiceIds?: string[];
   addOnIds?: string[];
@@ -64,7 +66,11 @@ function mergeLine(
   if (existing) {
     return lines.map((line) =>
       line.key === item.key
-        ? { ...line, quantity: line.quantity + quantity }
+        ? {
+            ...line,
+            quantity: line.quantity + quantity,
+            imageSrc: line.imageSrc || item.imageSrc || null,
+          }
         : line,
     );
   }
@@ -77,6 +83,7 @@ function mergeLine(
       summary: item.summary,
       unitPrice: item.unitPrice,
       quantity,
+      imageSrc: item.imageSrc ?? null,
       variantId: item.variantId,
       choiceIds: item.choiceIds,
       addOnIds: item.addOnIds,

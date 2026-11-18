@@ -1,6 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { useMemo, useState } from "react";
+import { useResolvedMenuImage } from "@/components/menu/menu-image-map-provider";
+import { getItemImage } from "@/data/images";
 import { menuPhotoSlugs, stockImageForSlug } from "@/data/menu-photos";
 import { slugify } from "@/data/slug";
 import { cn } from "@/lib/cn";
@@ -8,37 +11,83 @@ import { cn } from "@/lib/cn";
 type MenuImageProps = {
   name: string;
   slug?: string;
-  /** Admin / runtime override path. */
+  /** Static menu id (usually same as slug). Helps resolve admin uploads. */
+  itemId?: string;
+  /** Admin / runtime override (uploaded). */
   imageSrc?: string | null;
+  imageSquareSrc?: string | null;
+  imageThumbSrc?: string | null;
   className?: string;
   rounded?: string;
-  /** Eager-load above-the-fold images. */
+  /** 16:10 cards / modal, 1:1 thumbs */
+  ratio?: "card" | "square";
   priority?: boolean;
+  sizes?: string;
 };
 
 /**
- * Real menu photo when registered; otherwise a dark stock food plate.
- * Never shows a letter placeholder.
+ * Dish photo: admin upload → stock webp → legacy jpg → stock dark.
  */
 export function MenuImage({
   name,
   slug,
+  itemId,
   imageSrc,
+  imageSquareSrc,
+  imageThumbSrc,
   className,
   rounded = "rounded-2xl",
+  ratio = "card",
   priority = false,
+  sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
 }: MenuImageProps) {
   const resolvedSlug = slug ?? slugify(name);
-  const src =
-    imageSrc?.trim() ||
-    (menuPhotoSlugs.has(resolvedSlug)
-      ? `/images/menu/${resolvedSlug}.jpg`
-      : stockImageForSlug(resolvedSlug));
+  const resolvedId = itemId ?? resolvedSlug;
+  const upload = useResolvedMenuImage({
+    id: resolvedId,
+    slug: resolvedSlug,
+    imageSrc,
+    imageSquareSrc,
+    imageThumbSrc,
+  });
+
+  const image = getItemImage({
+    slug: resolvedSlug,
+    name,
+    imageSrc: upload?.imageSrc,
+    imageSquareSrc: upload?.imageSquareSrc,
+    imageThumbSrc: upload?.imageThumbSrc,
+    hasStockWebp: true,
+  });
+  const [attempt, setAttempt] = useState(0);
+
+  const candidates = useMemo(() => {
+    const preferred =
+      ratio === "square"
+        ? image.thumb || image.square || image.src
+        : image.src;
+    const list = [preferred];
+    if (upload?.imageSrc) {
+      list.push(`/images/menu/overrides/${resolvedSlug}.webp`);
+      list.push(`/images/menu/overrides/${resolvedSlug}.jpg`);
+      if (upload.imageSquareSrc) list.push(upload.imageSquareSrc);
+      if (upload.imageThumbSrc) list.push(upload.imageThumbSrc);
+    }
+    if (menuPhotoSlugs.has(resolvedSlug)) {
+      list.push(`/images/menu/${resolvedSlug}.jpg`);
+    }
+    list.push(stockImageForSlug(resolvedSlug));
+    return [...new Set(list.filter(Boolean))];
+  }, [image.src, image.square, image.thumb, upload, ratio, resolvedSlug]);
+
+  const src = candidates[Math.min(attempt, candidates.length - 1)]!;
 
   return (
     <div
       className={cn(
-        "relative aspect-[4/3] overflow-hidden bg-[#1a0c0e]",
+        "group/menu-image relative overflow-hidden bg-[#1A1112]",
+        "ring-1 ring-inset ring-[rgba(246,244,242,0.08)]",
+        ratio === "square" ? "aspect-square" : "aspect-[16/10]",
         rounded,
         className,
       )}
@@ -46,15 +95,22 @@ export function MenuImage({
       <Image
         key={src}
         src={src}
-        alt={name}
+        alt={image.alt}
         fill
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        className="object-cover"
+        sizes={sizes}
+        className="object-cover transition-transform duration-500 ease-out group-hover/menu-image:scale-[1.04]"
         priority={priority}
         loading={priority ? "eager" : "lazy"}
+        placeholder={image.blurDataURL ? "blur" : "empty"}
+        blurDataURL={image.blurDataURL}
+        onError={() =>
+          setAttempt((current) =>
+            current < candidates.length - 1 ? current + 1 : current,
+          )
+        }
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#140D0E]/45 via-transparent to-transparent"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#140D0E]/70 via-[#140D0E]/15 to-transparent"
         aria-hidden
       />
     </div>

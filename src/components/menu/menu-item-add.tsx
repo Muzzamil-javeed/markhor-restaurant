@@ -1,5 +1,6 @@
 "use client";
 
+import { useResolvedMenuImage } from "@/components/menu/menu-image-map-provider";
 import { QtyStepper } from "@/components/menu/qty-stepper";
 import type { MenuItem } from "@/data/menu-types";
 import { needsCustomisation } from "@/lib/menu";
@@ -13,13 +14,22 @@ import { useCustomiseStore } from "@/store/customise";
 import { useCartHydration } from "@/store/use-cart-hydration";
 import { useToastStore } from "@/store/toast";
 
-export function MenuItemAdd({ item }: { item: MenuItem }) {
+type ItemWithImage = MenuItem & {
+  imageSrc?: string | null;
+};
+
+export function MenuItemAdd({ item }: { item: ItemWithImage }) {
   const hydrated = useCartHydration();
   const lines = useCartStore((state) => state.lines);
   const addItem = useCartStore((state) => state.addItem);
   const setQuantity = useCartStore((state) => state.setQuantity);
   const openCustomise = useCustomiseStore((state) => state.open);
   const showToast = useToastStore((state) => state.show);
+  const resolvedImage = useResolvedMenuImage({
+    id: item.id,
+    slug: item.slug,
+    imageSrc: item.imageSrc,
+  });
 
   const customise = needsCustomisation(item);
   const simpleKey = buildLineKey(item.id, createDefaultSelection(item));
@@ -76,6 +86,7 @@ export function MenuItemAdd({ item }: { item: MenuItem }) {
           itemId: item.id,
           name: item.name,
           unitPrice: unitPrice(item, selection),
+          imageSrc: resolvedImage?.imageSrc ?? null,
         });
         showToast(`Added ${item.name}`);
       }}

@@ -17,8 +17,12 @@ export function CartLineCard({ line }: { line: CartLine }) {
       <MenuImage
         name={line.name}
         slug={slug}
+        itemId={line.itemId}
+        imageSrc={line.imageSrc}
+        ratio="square"
         rounded="rounded-xl"
         className="size-20 shrink-0 !aspect-square"
+        sizes="80px"
       />
       <div className="flex min-w-0 flex-1 flex-col gap-2.5">
         <div className="flex items-start justify-between gap-2">

@@ -8,6 +8,9 @@ import { formatItemPrice } from "@/lib/menu";
 export function MenuItemCard({ item }: { item: MenuItem | RuntimeMenuItem }) {
   const soldOut = !item.available;
   const imageSrc = "imageSrc" in item ? item.imageSrc : null;
+  const imageSquareSrc =
+    "imageSquareSrc" in item ? item.imageSquareSrc : null;
+  const imageThumbSrc = "imageThumbSrc" in item ? item.imageThumbSrc : null;
 
   return (
     <article
@@ -20,7 +23,10 @@ export function MenuItemCard({ item }: { item: MenuItem | RuntimeMenuItem }) {
         <MenuImage
           name={item.name}
           slug={item.slug}
+          itemId={item.id}
           imageSrc={imageSrc}
+          imageSquareSrc={imageSquareSrc}
+          imageThumbSrc={imageThumbSrc}
           rounded="rounded-none"
           className="aspect-[5/3]"
         />

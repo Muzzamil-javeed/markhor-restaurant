@@ -3,6 +3,7 @@
 import { useId, useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MenuImage } from "@/components/menu/menu-image";
+import { useResolvedMenuImage } from "@/components/menu/menu-image-map-provider";
 import { cn } from "@/lib/cn";
 import { formatPKR } from "@/lib/format";
 import { needsCustomisation } from "@/lib/menu";
@@ -27,10 +28,94 @@ type CartUpsellProps = {
   suggestions: MenuItem[];
 };
 
-function CartUpsellRail({ tone = "light", title, suggestions }: CartUpsellProps) {
+function UpsellCard({
+  item,
+  dark,
+}: {
+  item: MenuItem;
+  dark: boolean;
+}) {
   const add = useCartStore((state) => state.add);
   const openCustomise = useCustomiseStore((state) => state.open);
   const showToast = useToastStore((state) => state.show);
+  const resolvedImage = useResolvedMenuImage({
+    id: item.id,
+    slug: item.slug,
+  });
+
+  return (
+    <li
+      className={cn(
+        "flex w-[10.75rem] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border",
+        dark
+          ? "border-cream/12 bg-[#140D0E]"
+          : "w-[12rem] border-line bg-white p-3",
+      )}
+    >
+      {dark ? (
+        <MenuImage
+          name={item.name}
+          slug={item.slug}
+          itemId={item.id}
+          rounded="rounded-none"
+          className="aspect-[4/3] shrink-0"
+        />
+      ) : null}
+      <div className={cn("flex min-h-0 flex-1 flex-col gap-2.5", dark && "p-3")}>
+        <div className="min-w-0">
+          <p
+            className={cn(
+              "line-clamp-2 text-sm leading-snug font-medium",
+              dark ? "text-cream" : "text-ink",
+            )}
+            title={item.name}
+          >
+            {item.name}
+          </p>
+          <p
+            className={cn(
+              "mt-1 text-xs tabular-nums",
+              dark ? "text-cream/50" : "text-muted",
+            )}
+          >
+            {formatPKR(item.price)}
+          </p>
+        </div>
+        <button
+          type="button"
+          className={cn(
+            "mt-auto inline-flex h-9 w-full shrink-0 items-center justify-center rounded-full px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2",
+            dark
+              ? "border border-cream/25 text-cream hover:bg-cream/10 focus-visible:ring-cream/40"
+              : "border border-line text-ink hover:bg-tint focus-visible:ring-brand/40",
+          )}
+          onClick={() => {
+            if (needsCustomisation(item)) {
+              openCustomise(item.id, {
+                ...item,
+                imageSrc: resolvedImage?.imageSrc ?? null,
+              });
+              return;
+            }
+            const selection = createDefaultSelection(item);
+            add({
+              key: buildLineKey(item.id, selection),
+              itemId: item.id,
+              name: item.name,
+              unitPrice: unitPrice(item, selection),
+              imageSrc: resolvedImage?.imageSrc ?? null,
+            });
+            showToast(`Added ${item.name}`);
+          }}
+        >
+          Add
+        </button>
+      </div>
+    </li>
+  );
+}
+
+function CartUpsellRail({ tone = "light", title, suggestions }: CartUpsellProps) {
   const dark = tone === "dark";
   const titleId = useId();
   const scrollerRef = useRef<HTMLUListElement>(null);
@@ -101,75 +186,7 @@ function CartUpsellRail({ tone = "light", title, suggestions }: CartUpsellProps)
         )}
       >
         {suggestions.map((item) => (
-          <li
-            key={item.id}
-            className={cn(
-              "flex w-[10.75rem] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border",
-              dark
-                ? "border-cream/12 bg-[#140D0E]"
-                : "w-[12rem] border-line bg-white p-3",
-            )}
-          >
-            {dark ? (
-              <MenuImage
-                name={item.name}
-                slug={item.slug}
-                rounded="rounded-none"
-                className="aspect-[4/3] shrink-0"
-              />
-            ) : null}
-            <div
-              className={cn(
-                "flex min-h-0 flex-1 flex-col gap-2.5",
-                dark && "p-3",
-              )}
-            >
-              <div className="min-w-0">
-                <p
-                  className={cn(
-                    "line-clamp-2 text-sm leading-snug font-medium",
-                    dark ? "text-cream" : "text-ink",
-                  )}
-                  title={item.name}
-                >
-                  {item.name}
-                </p>
-                <p
-                  className={cn(
-                    "mt-1 text-xs tabular-nums",
-                    dark ? "text-cream/50" : "text-muted",
-                  )}
-                >
-                  {formatPKR(item.price)}
-                </p>
-              </div>
-              <button
-                type="button"
-                className={cn(
-                  "mt-auto inline-flex h-9 w-full shrink-0 items-center justify-center rounded-full px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2",
-                  dark
-                    ? "border border-cream/25 text-cream hover:bg-cream/10 focus-visible:ring-cream/40"
-                    : "border border-line text-ink hover:bg-tint focus-visible:ring-brand/40",
-                )}
-                onClick={() => {
-                  if (needsCustomisation(item)) {
-                    openCustomise(item.id, item);
-                    return;
-                  }
-                  const selection = createDefaultSelection(item);
-                  add({
-                    key: buildLineKey(item.id, selection),
-                    itemId: item.id,
-                    name: item.name,
-                    unitPrice: unitPrice(item, selection),
-                  });
-                  showToast(`Added ${item.name}`);
-                }}
-              >
-                Add
-              </button>
-            </div>
-          </li>
+          <UpsellCard key={item.id} item={item} dark={dark} />
         ))}
       </ul>
     </section>

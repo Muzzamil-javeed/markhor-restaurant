@@ -25,6 +25,7 @@ export const menuPhotoSlugs = new Set<string>([
   "butterflied-jumbo-prawns",
   "stone-grilled-chicken",
   "fresh-green-salad",
+  "classic-mac-and-cheese",
 ]);
 
 /** Dark food plates used when an item has no dedicated photo. */

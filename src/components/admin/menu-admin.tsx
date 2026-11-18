@@ -23,6 +23,7 @@ type MenuAdminItem = {
   nameOverride: string | null;
   imagePath: string | null;
   previewImage: string;
+  hasStaticPhoto: boolean;
   isCustom: boolean;
 };
 
@@ -52,6 +53,10 @@ export function MenuAdmin() {
   const [items, setItems] = useState<MenuAdminItem[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [query, setQuery] = useState("");
+  const [photoFilter, setPhotoFilter] = useState<
+    "all" | "missing" | "stock" | "uploaded"
+  >("all");
+  const [matchStyle, setMatchStyle] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [editing, setEditing] = useState<MenuAdminItem | null>(null);
@@ -94,13 +99,19 @@ export function MenuAdmin() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(
-      (item) =>
+    return items.filter((item) => {
+      const matchesQuery =
+        !q ||
         item.name.toLowerCase().includes(q) ||
-        item.categoryName.toLowerCase().includes(q),
-    );
-  }, [items, query]);
+        item.categoryName.toLowerCase().includes(q);
+      if (!matchesQuery) return false;
+      const uploaded = Boolean(item.imagePath);
+      if (photoFilter === "uploaded") return uploaded;
+      if (photoFilter === "stock") return !uploaded && item.hasStaticPhoto;
+      if (photoFilter === "missing") return !uploaded && !item.hasStaticPhoto;
+      return true;
+    });
+  }, [items, query, photoFilter]);
 
   const openEdit = (item: MenuAdminItem) => {
     setEditing(item);
@@ -205,6 +216,7 @@ export function MenuAdmin() {
     try {
       const body = new FormData();
       body.append("file", file);
+      body.append("matchStyle", matchStyle ? "1" : "0");
       const response = await fetch(`/api/admin/menu/${item.id}/image`, {
         method: "POST",
         body,
@@ -215,7 +227,30 @@ export function MenuAdmin() {
         showToast(data.error ?? "Image upload failed.");
         return;
       }
-      showToast("Image updated — refresh menu to see it.");
+      showToast("Photo uploaded — live on the menu.");
+      await load();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const removePhoto = async (item: MenuAdminItem) => {
+    if (!item.imagePath) return;
+    if (!window.confirm(`Remove uploaded photo for “${item.name}”? Stock will show.`)) {
+      return;
+    }
+    setBusyId(item.id);
+    try {
+      const response = await fetch(`/api/admin/menu/${item.id}/image`, {
+        method: "DELETE",
+      });
+      const data = await readJson<{ error?: string }>(response);
+      if (!response.ok) {
+        setError(data.error ?? "Could not remove photo.");
+        showToast(data.error ?? "Could not remove photo.");
+        return;
+      }
+      showToast("Using stock photo again.");
       await load();
     } finally {
       setBusyId(null);
@@ -287,13 +322,41 @@ export function MenuAdmin() {
         </button>
       </div>
 
-      <input
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search by name or category"
-        className="h-11 max-w-md rounded-full border border-line bg-white px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-        aria-label="Search menu items"
-      />
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search by name or category"
+          className="h-11 max-w-md flex-1 rounded-full border border-line bg-white px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+          aria-label="Search menu items"
+        />
+        <label className="inline-flex items-center gap-2 text-xs font-medium text-ink">
+          <select
+            value={photoFilter}
+            onChange={(event) =>
+              setPhotoFilter(
+                event.target.value as "all" | "missing" | "stock" | "uploaded",
+              )
+            }
+            className="h-10 rounded-full border border-line bg-white px-3 text-xs font-semibold outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+            aria-label="Filter by photo"
+          >
+            <option value="all">All photos</option>
+            <option value="missing">Missing photo</option>
+            <option value="stock">Stock photo</option>
+            <option value="uploaded">Uploaded</option>
+          </select>
+        </label>
+        <label className="inline-flex items-center gap-2 text-xs font-medium text-ink">
+          <input
+            type="checkbox"
+            checked={matchStyle}
+            onChange={(event) => setMatchStyle(event.target.checked)}
+            className="size-4 rounded border-line"
+          />
+          Match site style on upload
+        </label>
+      </div>
 
       {error ? (
         <p
@@ -394,7 +457,7 @@ export function MenuAdmin() {
 
                 <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-line px-3 text-xs font-semibold text-ink hover:bg-tint">
                   <ImagePlus className="size-3.5" aria-hidden />
-                  Photo
+                  {item.imagePath ? "Replace" : "Photo"}
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -407,6 +470,17 @@ export function MenuAdmin() {
                     }}
                   />
                 </label>
+
+                {item.imagePath ? (
+                  <button
+                    type="button"
+                    disabled={busyId === item.id}
+                    onClick={() => void removePhoto(item)}
+                    className="inline-flex h-9 items-center rounded-full border border-line px-3 text-xs font-semibold text-muted hover:bg-tint"
+                  >
+                    Use stock
+                  </button>
+                ) : null}
 
                 <button
                   type="button"

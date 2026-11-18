@@ -100,8 +100,12 @@ model MenuOverride {
   hidden        Boolean  @default(false)
   priceOverride Int?
   nameOverride  String?
-  /// Public path e.g. /images/menu/overrides/<itemId>.jpg
+  /// Landscape / card URL (local path or Blob)
   imagePath     String?
+  imageSquarePath String?
+  imageThumbPath  String?
+  /// stock | uploaded
+  imageSource   String?
   updatedAt     DateTime @updatedAt
 }
 
@@ -115,9 +119,12 @@ model MenuCustomItem {
   price       Int
   available   Boolean  @default(true)
   hidden      Boolean  @default(false)
-  imagePath   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  imagePath       String?
+  imageSquarePath String?
+  imageThumbPath  String?
+  imageSource     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([categoryId])
   @@index([hidden])
