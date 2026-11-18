@@ -3,6 +3,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { NextResponse } from "next/server";
 import { assertAdmin } from "@/lib/admin-auth";
+import { revalidateMenuCache } from "@/lib/menu-cache";
 import {
   isKnownMenuItemId,
   staticItemById,
@@ -78,6 +79,7 @@ export async function POST(request: Request, context: RouteContext) {
       ? await updateCustomMenuItem(itemId, { imagePath })
       : await upsertMenuOverride({ itemId, imagePath });
 
+    revalidateMenuCache();
     return NextResponse.json({
       override,
       imagePath: `${imagePath}?v=${Date.now()}`,

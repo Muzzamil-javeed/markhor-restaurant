@@ -1,10 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { useState, type ComponentType } from "react";
+import {
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  Coffee,
+  Dices,
+  Star,
+  type LucideProps,
+} from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionEyebrow } from "@/components/ui/section-eyebrow";
 import { site } from "@/data/site";
+
+const PERK_ICONS: Record<string, ComponentType<LucideProps>> = {
+  "insta-story": Camera,
+  "complimentary-tea": Coffee,
+  "uno-or-jenga": Dices,
+};
 
 export function HomeTableAndReviews() {
   const [index, setIndex] = useState(0);
@@ -19,20 +33,30 @@ export function HomeTableAndReviews() {
             Little extras, big mood.
           </h2>
           <ul className="mt-8 flex flex-col gap-4">
-            {site.perks.map((perk) => (
-              <li
-                key={perk.id}
-                className="rounded-2xl border border-dashed border-brand/35 bg-cream/70 px-4 py-4"
-              >
-                <p className="font-eyebrow text-[10px] font-semibold text-brand uppercase">
-                  Stamp
-                </p>
-                <h3 className="mt-1 text-base font-semibold text-ink">
-                  {perk.title}
-                </h3>
-                <p className="mt-1 text-sm text-muted">{perk.body}</p>
-              </li>
-            ))}
+            {site.perks.map((perk) => {
+              const Icon = PERK_ICONS[perk.id] ?? Coffee;
+              return (
+                <li
+                  key={perk.id}
+                  className="group flex gap-3.5 rounded-2xl border border-dashed border-brand/35 bg-cream/70 px-4 py-4 transition-colors duration-300 hover:border-brand/55 hover:bg-cream"
+                >
+                  <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-tint text-brand shadow-[inset_0_0_0_1px_rgba(94,15,29,0.08)] transition-transform duration-300 group-hover:scale-105">
+                    <Icon className="size-4" strokeWidth={1.75} aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-eyebrow text-[10px] font-semibold text-brand uppercase">
+                      Stamp
+                    </p>
+                    <h3 className="mt-1 text-base font-semibold text-ink">
+                      {perk.title}
+                    </h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted">
+                      {perk.body}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </Reveal>
 

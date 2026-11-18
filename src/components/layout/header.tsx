@@ -154,6 +154,7 @@ export function Header() {
         <HeaderNav tone={tone} mobile className="flex items-center gap-1" />
         <HeaderMobileStatus tone={tone} />
       </div>
+
     </header>
   );
 }

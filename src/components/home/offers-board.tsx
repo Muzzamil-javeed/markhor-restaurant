@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useSyncExternalStore, type ComponentType } from "react";
 import {
   Coffee,
@@ -109,6 +110,27 @@ export function HomeOffersBoard() {
               Upcoming or ended
             </li>
           </ul>
+
+          <div className="mt-8 grid max-w-md grid-cols-2 gap-3 sm:gap-4">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-line shadow-[0_12px_28px_rgba(36,26,27,0.08)]">
+              <Image
+                src="/images/home/menu-preview.jpg"
+                alt=""
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 45vw, 200px"
+              />
+            </div>
+            <div className="relative mt-[50%] aspect-[4/5] overflow-hidden rounded-2xl border border-line shadow-[0_12px_28px_rgba(36,26,27,0.08)]">
+              <Image
+                src="/images/home/how-it-works.jpg"
+                alt=""
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 45vw, 200px"
+              />
+            </div>
+          </div>
         </Reveal>
 
         <motion.div

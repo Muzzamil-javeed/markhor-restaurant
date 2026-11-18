@@ -1,8 +1,10 @@
+import { cacheLife, cacheTag } from "next/cache";
 import { menu } from "@/data/menu";
 import type { Category, MenuItem } from "@/data/menu-types";
 import { stockImageForSlug } from "@/data/menu-photos";
 import { slugify } from "@/data/slug";
 import { prisma } from "@/lib/db";
+import { MENU_CACHE_TAG } from "@/lib/menu-cache";
 
 export type MenuOverrideRow = {
   itemId: string;
@@ -95,6 +97,10 @@ export function listCategoryOptions() {
 
 /** Merge static menu.ts + custom DB dishes + MenuOverride rows. */
 export async function getRuntimeMenu(): Promise<Category[]> {
+  "use cache";
+  cacheTag(MENU_CACHE_TAG);
+  cacheLife("minutes");
+
   const [overrides, customs] = await Promise.all([
     prisma.menuOverride.findMany(),
     prisma.menuCustomItem.findMany(),
@@ -128,6 +134,10 @@ export async function getRuntimeMenu(): Promise<Category[]> {
 export async function getRuntimeMenuItem(
   itemId: string,
 ): Promise<RuntimeMenuItem | null> {
+  "use cache";
+  cacheTag(MENU_CACHE_TAG);
+  cacheLife("minutes");
+
   const base = staticItemById(itemId);
   if (base) {
     const override = await prisma.menuOverride.findUnique({

@@ -4,6 +4,7 @@ import { menu } from "@/data/menu";
 import { menuPhotoSlugs } from "@/data/menu-photos";
 import { assertAdmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
+import { revalidateMenuCache } from "@/lib/menu-cache";
 import {
   createCustomMenuItem,
   listCategoryOptions,
@@ -117,6 +118,7 @@ export async function POST(request: Request) {
       description: parsed.data.description ?? null,
       available: parsed.data.available ?? true,
     });
+    revalidateMenuCache();
     return NextResponse.json({ item }, { status: 201 });
   } catch (error) {
     console.error("[admin/menu POST]", error);

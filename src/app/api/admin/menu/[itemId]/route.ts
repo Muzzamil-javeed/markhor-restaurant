@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
+import { revalidateMenuCache } from "@/lib/menu-cache";
 import {
   isKnownMenuItemId,
   softDeleteMenuItem,
@@ -92,6 +93,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         hidden: parsed.data.hidden,
         imagePath: parsed.data.imagePath,
       });
+      revalidateMenuCache();
       return NextResponse.json({ override, item: override });
     }
 
@@ -103,6 +105,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       nameOverride: parsed.data.nameOverride,
       imagePath: parsed.data.imagePath,
     });
+    revalidateMenuCache();
     return NextResponse.json({ override });
   } catch (error) {
     return serverError(error);
@@ -122,6 +125,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
   try {
     const override = await softDeleteMenuItem(itemId);
+    revalidateMenuCache();
     return NextResponse.json({ override });
   } catch (error) {
     return serverError(error);

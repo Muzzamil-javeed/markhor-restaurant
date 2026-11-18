@@ -18,37 +18,52 @@ export function HeroCopy() {
           hidden: {},
           show: {
             transition: {
-              staggerChildren: reduce ? 0 : 0.1,
-              delayChildren: reduce ? 0 : 0.12,
+              staggerChildren: reduce ? 0 : 0.18,
+              delayChildren: reduce ? 0 : 0.15,
             },
           },
         }}
       >
-        {LINES.map((line) => (
-          <motion.span
-            key={line}
-            className="block"
-            variants={{
-              hidden: reduce ? { opacity: 0 } : { opacity: 0, y: 28 },
-              show: {
-                opacity: 1,
-                y: 0,
-                transition: { duration: reduce ? 0.2 : 0.65, ease },
-              },
-            }}
-          >
-            {line}
-          </motion.span>
+        {LINES.map((line, index) => (
+          <span key={line} className="block overflow-hidden py-[0.04em]">
+            <motion.span
+              className={
+                index === 2
+                  ? "hero-headline-hot block bg-gradient-to-b from-[#F3EADB] via-[#F3EADB] to-[#e87830] bg-clip-text text-transparent"
+                  : "block"
+              }
+              variants={{
+                hidden: reduce
+                  ? { opacity: 0 }
+                  : { opacity: 0, y: "110%", filter: "blur(8px)" },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  filter: "blur(0px)",
+                  transition: {
+                    duration: reduce ? 0.2 : 0.85,
+                    ease,
+                  },
+                },
+              }}
+            >
+              {line}
+            </motion.span>
+          </span>
         ))}
       </motion.p>
 
       <motion.h1
         className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-cream/80 sm:mt-6 sm:text-base"
-        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={
+          reduce
+            ? { opacity: 0 }
+            : { opacity: 0, y: 18, filter: "blur(6px)" }
+        }
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{
-          delay: reduce ? 0 : 0.4,
-          duration: reduce ? 0.2 : 0.5,
+          delay: reduce ? 0 : 0.75,
+          duration: reduce ? 0.2 : 0.65,
           ease,
         }}
       >

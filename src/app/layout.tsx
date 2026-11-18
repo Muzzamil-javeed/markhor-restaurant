@@ -51,8 +51,9 @@ export const metadata: Metadata = {
   },
   applicationName: "Markhor Restaurant",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: [{ url: "/logo.png", type: "image/png" }],
+    apple: [{ url: "/logo.png", type: "image/png" }],
+    shortcut: "/logo.png",
   },
 };
 
