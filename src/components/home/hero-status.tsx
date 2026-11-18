@@ -86,11 +86,11 @@ export function HeroStatusCard() {
           >
             {ready && isOpen ? (
               <span
-                className="relative inline-flex size-1.5 items-center justify-center"
+                className="hero-open-blink relative inline-flex size-1.5 items-center justify-center"
                 aria-hidden
               >
-                <span className="animate-status-pulse absolute inset-0 rounded-full bg-emerald-200" />
-                <span className="relative size-1.5 rounded-full bg-emerald-200" />
+                <span className="absolute inset-0 rounded-full bg-emerald-200" />
+                <span className="relative size-1.5 rounded-full bg-emerald-100" />
               </span>
             ) : null}
             {!ready ? "…" : isOpen ? "Open" : "Closed"}
