@@ -9,20 +9,20 @@ import { cn } from "@/lib/cn";
 
 const PREVIEW_FRAMES = [
   {
-    src: "/images/home/menu-preview.jpg",
-    alt: "Smokehouse grill",
+    src: "/images/menu/overrides/beef-tenderloin-steak-1795087108943.webp",
+    alt: "Beef tenderloin steak",
     tilt: "-rotate-2",
     width: "w-[88%] self-end",
   },
   {
-    src: "/images/home/how-it-works.jpg",
-    alt: "Plated smoked meat",
+    src: "/images/menu/overrides/steak-and-eggs-1795087200016.webp",
+    alt: "Steak and eggs",
     tilt: "rotate-[1.5deg]",
     width: "w-[82%] self-start",
   },
   {
-    src: "/images/home/sides-dark.png",
-    alt: "Smokehouse sides",
+    src: "/images/menu/overrides/angus-ribeye-grass-fed-aus-1795087344254.webp",
+    alt: "Angus ribeye",
     tilt: "rotate-2",
     width: "w-[86%] self-end",
   },
