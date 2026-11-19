@@ -1,101 +1,75 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  FileText,
-  Scale,
-  ShieldCheck,
-  ShoppingBag,
-  Utensils,
-} from "lucide-react";
-import {
-  LegalPageHeader,
-  LegalSection,
-} from "@/components/layout/legal-section";
+import { TermsOfServiceBody } from "@/components/layout/terms-of-service-body";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Terms of service",
-  description: "Terms for ordering from Markhor Restaurant online.",
+  description: "Terms for ordering from Markhor Smoked Meat online.",
   path: "/terms",
 });
 
-const sections = [
-  {
-    icon: FileText,
-    title: "1. Agreement to terms",
-    body: [
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sodales ipsum vel elementum vehicula. Suspendisse sit amet aliquet ex. Pellentesque commodo tortor vel mi volutpat vestibulum. Quisque vel fermentum neque. Maecenas ac velit quam. Sed nec diam et arcu ullamcorper auctor. Aenean cursus nisl lorem, vel facilisis magna blandit ut.",
-    ],
-  },
-  {
-    icon: ShoppingBag,
-    title: "2. Orders and online takeout",
-    body: [
-      "Integer egestas mi eros, nec suscipit elit sodales sed. Aliquam a mattis neque. Morbi sed dapibus nunc. Ut vitae diam elit. Sed at nibh orci. Nam sit amet augue eget eros tempor fringilla tincidunt non enim. Vivamus velit mi, egestas finibus elementum quis, pharetra a felis. Curabitur et ex augue. Curabitur et elementum ante. Vestibulum sit amet nunc enim. Sed turpis mi, malesuada in auctor ut, dictum at purus. Integer lectus dolor, pharetra auctor lobortis at, dapibus sed est.",
-    ],
-  },
-  {
-    icon: Utensils,
-    title: "3. Menu, pricing and availability",
-    body: [
-      "Etiam vitae mattis mi. Suspendisse bibendum, odio ut ultrices cursus, quam odio maximus odio, nec luctus arcu lectus eget ante. Nunc condimentum condimentum nulla, eu feugiat lorem tincidunt nec. Donec metus orci, elementum ac pellentesque eget, venenatis at mi. Nulla maximus gravida elit, sed hendrerit purus lobortis sit amet. In porttitor enim et ligula aliquet, ac bibendum urna ullamcorper. Vestibulum consectetur ligula at neque lobortis lobortis. Nunc condimentum ex leo, convallis aliquet dolor consectetur eu. Morbi at ligula tellus. Donec purus eros, aliquam vel nunc ut, consectetur tristique diam. Suspendisse sollicitudin at nibh a hendrerit. In eu vulputate massa.",
-    ],
-  },
-  {
-    icon: ShieldCheck,
-    title: "4. Guest responsibilities",
-    body: [
-      "Fusce gravida ligula magna, vel placerat dui dignissim sed. Phasellus ultricies eleifend felis, in ultricies purus porta sagittis. Mauris purus urna, consectetur et turpis cursus, pellentesque suscipit massa. Pellentesque auctor lacus eget leo interdum ultricies. Etiam rhoncus, enim aliquam tempus sollicitudin, augue libero dignissim augue, sed vehicula neque arcu ut ex. Nullam pharetra venenatis nunc eget bibendum. Fusce risus diam, egestas quis justo sit amet, aliquet varius sem. Vivamus dignissim convallis diam sed ornare. Nam suscipit cursus condimentum. Sed ut leo sodales, vulputate tellus eget, dapibus ante. Pellentesque porttitor, est laoreet vulputate dapibus, ipsum justo pharetra felis, sit amet tempus lectus enim non tortor.",
-    ],
-  },
-  {
-    icon: Scale,
-    title: "5. Changes and governing terms",
-    body: [
-      "Suspendisse ac sollicitudin velit, vitae ultricies erat. Ut vulputate elementum odio nec cursus. In sollicitudin tellus nec gravida finibus. Morbi maximus eget elit a tempus. Donec in leo quis elit sollicitudin laoreet vel id ligula. Interdum et malesuada fames ac ante ipsum primis in faucibus. Praesent non est pellentesque, lobortis lectus eu, eleifend orci. Suspendisse gravida molestie urna ac luctus. Sed vel molestie nulla. Interdum et malesuada fames ac ante ipsum primis in faucibus. Proin ut luctus odio.",
-    ],
-  },
-] as const;
-
 export default function TermsPage() {
   return (
-    <main className="mx-auto w-full max-w-[800px] px-4 py-12 sm:py-16">
-      <LegalPageHeader
-        eyebrow="Legal"
-        title="Markhor Restaurant Terms of Service"
-        updated="Last Updated: April 3, 2020"
+    <main className="relative overflow-hidden paper-texture bg-cream">
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden
+        style={{
+          background:
+            "radial-gradient(ellipse at 8% 0%, rgba(94,15,29,0.07), transparent 45%), radial-gradient(ellipse at 100% 20%, rgba(94,15,29,0.04), transparent 40%)",
+        }}
       />
 
-      <p className="mt-6 text-base leading-relaxed text-ink/85">
-        These terms apply when you browse or place an order through Markhor
-        Restaurant’s website and related online ordering services. By using the
-        site you agree to the sections below.
-      </p>
+      <div className="relative mx-auto w-full max-w-[720px] px-4 py-14 sm:py-20">
+        <header>
+          <p className="font-eyebrow text-[10px] font-semibold tracking-[0.2em] text-brand uppercase">
+            Legal
+          </p>
+          <h1 className="font-display mt-3 text-4xl leading-[0.95] tracking-wide text-ink uppercase sm:text-5xl">
+            Terms of Service
+          </h1>
+          <p className="mt-2 max-w-xl text-sm text-muted sm:text-base">
+            Markhor Smoked Meat
+          </p>
+          <p className="mt-4 text-sm text-muted">
+            Last updated:{" "}
+            <time dateTime="2026-11-19">19 November 2026</time>
+          </p>
+          <div className="mt-8 h-px w-16 bg-brand/40" aria-hidden />
+        </header>
 
-      <div className="mt-8 flex flex-col gap-4">
-        {sections.map((section) => (
-          <LegalSection
-            key={section.title}
-            icon={section.icon}
-            title={section.title}
+        <div className="mt-8 space-y-4 text-[15px] leading-[1.75] text-ink/80 sm:text-base">
+          <p>
+            These terms apply when you browse or place an order through the
+            website of Markhor Smoked Meat (“Markhor”, “we”, “us”, “our”) at{" "}
+            <a
+              href="https://markhorsmokedmeat.com"
+              className="font-medium text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+            >
+              markhorsmokedmeat.com
+            </a>{" "}
+            and our related online ordering service. Markhor is a restaurant
+            located at Shop 1, Plot 11C, Khayaban-e-Nishat, D.H.A Phase 6,
+            Karachi 75500. By using the website or placing an order, you agree
+            to the sections below. If you do not agree, please do not place an
+            order.
+          </p>
+        </div>
+
+        <TermsOfServiceBody />
+
+        <p className="mt-16 border-t border-line/80 pt-8 text-sm text-muted">
+          Also see our{" "}
+          <Link
+            href="/privacy"
+            className="font-medium text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           >
-            {section.body.map((paragraph) => (
-              <p key={paragraph.slice(0, 40)}>{paragraph}</p>
-            ))}
-          </LegalSection>
-        ))}
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
-
-      <p className="mt-8 text-sm text-muted">
-        Also see our{" "}
-        <Link
-          href="/privacy"
-          className="font-medium text-brand underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-        >
-          Privacy policy
-        </Link>
-        .
-      </p>
     </main>
   );
 }

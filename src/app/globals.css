@@ -235,7 +235,7 @@
 }
 
 /* —— Motion system (smooth, no jerk) —— */
-html {
+  html {
   overflow-x: clip;
 }
 
