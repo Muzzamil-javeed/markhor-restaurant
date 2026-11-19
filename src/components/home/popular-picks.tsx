@@ -12,7 +12,7 @@ export function HomePopularPicks() {
   const reduce = useReducedMotion();
 
   return (
-    <section className="relative isolate z-0 overflow-hidden bg-[#120D0E] pt-6 text-[#F6F4F2] sm:pt-8">
+    <section className="relative isolate z-0 overflow-hidden bg-[#120D0E] pt-0 text-[#F6F4F2]">
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_0%,rgba(94,15,29,0.18),transparent_50%),radial-gradient(ellipse_at_90%_80%,rgba(232,120,48,0.06),transparent_45%)]" />
 

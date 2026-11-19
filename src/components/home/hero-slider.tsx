@@ -6,19 +6,19 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 const SLIDES = [
   {
-    src: "/images/hero.jpg",
-    alt: "Smoked meat on the grill",
-    position: "center 36%",
-  },
-  {
-    src: "/images/menu/beef-brisket.jpg",
-    alt: "Markhor smoked brisket",
+    src: "/images/home/banner/the-beast.jpg",
+    alt: "The Beast burger",
     position: "center 40%",
   },
   {
-    src: "/images/home/how-it-works.jpg",
-    alt: "Smokehouse plates at Markhor",
-    position: "center 45%",
+    src: "/images/home/banner/smoked-brisket-tacos.jpg",
+    alt: "Smoked brisket tacos",
+    position: "center 42%",
+  },
+  {
+    src: "/images/home/banner/beef-brisket.jpg",
+    alt: "Beef brisket",
+    position: "center 40%",
   },
 ] as const;
 

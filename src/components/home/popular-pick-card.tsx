@@ -68,7 +68,10 @@ export function PopularPickCard({
       <motion.article
         className={cn(
           "group relative flex h-full flex-col overflow-hidden rounded-[1.35rem]",
-          "bg-[#1A1314] ring-1 ring-white/[0.06]",
+          "bg-[#1A1314] border border-brand/70",
+          "shadow-[0_12px_32px_rgba(94,15,29,0.45),0_0_0_1px_rgba(94,15,29,0.3)]",
+          "transition-[border-color,box-shadow] duration-300",
+          "hover:border-brand hover:shadow-[0_16px_40px_rgba(94,15,29,0.6),0_0_0_1px_rgba(94,15,29,0.5)]",
         )}
         whileHover={reduce ? undefined : { y: -8, scale: 1.01 }}
         transition={{ type: "spring", stiffness: 260, damping: 22 }}

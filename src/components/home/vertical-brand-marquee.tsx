@@ -1,6 +1,16 @@
-const MARQUEE_LINE = "MARKHOR RESTAURANT";
+const MARQUEE_PHRASES = [
+  "MARKHOR RESTAURANT",
+  "Western smokehouse",
+  "Smoked low & slow",
+  "Markhor",
+  "DHA Phase 6",
+] as const;
+
 /** Enough repeats so the track always feels continuous on tall sections */
-const MARQUEE_LINES = Array.from({ length: 16 }, () => MARQUEE_LINE);
+const MARQUEE_LINES = Array.from(
+  { length: 16 },
+  (_, index) => MARQUEE_PHRASES[index % MARQUEE_PHRASES.length]!,
+);
 
 /**
  * Left-edge outlined brand rail. Parent must be `relative`.
@@ -21,7 +31,7 @@ export function VerticalBrandMarquee() {
             {MARQUEE_LINES.map((line, index) => (
               <p
                 key={`${copy}-${index}`}
-                className="font-display text-[clamp(4.5rem,12vw,9rem)] leading-none font-black tracking-[0.14em] text-transparent uppercase [writing-mode:vertical-rl] select-none"
+                className="font-display text-[clamp(4.5rem,12vw,9rem)] leading-none font-black tracking-[-0.02em] text-transparent uppercase [writing-mode:vertical-rl] select-none"
                 style={{
                   WebkitTextStroke: "2px rgba(36, 26, 27, 0.18)",
                 }}

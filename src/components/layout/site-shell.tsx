@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BackToTop } from "@/components/layout/back-to-top";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { OfflineBanner } from "@/components/layout/offline-banner";
@@ -15,6 +16,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
         <PageTransition>{children}</PageTransition>
       </div>
       <Footer />
+      <BackToTop />
       <SiteOverlays />
       <ToastViewport />
     </div>

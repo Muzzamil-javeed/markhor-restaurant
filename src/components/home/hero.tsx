@@ -7,7 +7,6 @@ import { HeroGsap } from "@/components/home/hero-gsap";
 import { HeroMagneticCta } from "@/components/home/hero-magnetic-cta";
 import { HeroMedia } from "@/components/home/hero-media";
 import { HeroScrollCue } from "@/components/home/hero-scroll-cue";
-import { HeroSmoke } from "@/components/home/hero-smoke";
 import { HeroStatusCard } from "@/components/home/hero-status";
 import { BrandLink } from "@/components/ui/brand-button";
 import { displayPhone, telHref } from "@/lib/phone";
@@ -23,7 +22,6 @@ export function HomeHero() {
         aria-hidden
       >
         <HeroMedia />
-        <HeroSmoke />
         <HeroAtmosphere />
       </div>
 

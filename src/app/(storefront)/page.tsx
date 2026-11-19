@@ -23,8 +23,8 @@ export default function Home() {
       <link
         rel="preload"
         as="image"
-        href="/images/hero.avif"
-        type="image/avif"
+        href="/images/home/banner/the-beast.jpg"
+        type="image/jpeg"
         fetchPriority="high"
       />
       <HomeHero />

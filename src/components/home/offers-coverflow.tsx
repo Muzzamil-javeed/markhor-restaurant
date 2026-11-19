@@ -148,6 +148,16 @@ export function OffersCoverflow() {
                     priority={slideIndex < 3}
                     draggable={false}
                   />
+                  {active ? (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-4 pt-16 pb-5 sm:px-5 sm:pb-6">
+                      <p className="font-display text-lg leading-tight tracking-wide text-white sm:text-xl">
+                        {slide.alt}
+                      </p>
+                      <p className="mt-1 font-display text-[10px] tracking-[0.22em] text-[#E87830] uppercase sm:text-[11px]">
+                        Markhor
+                      </p>
+                    </div>
+                  ) : null}
                 </motion.div>
               );
             })}

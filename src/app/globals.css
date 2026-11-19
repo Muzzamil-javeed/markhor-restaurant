@@ -207,6 +207,10 @@
   animation: marquee-ribbon 72s linear infinite;
 }
 
+.animate-marquee-ribbon-reverse {
+  animation: marquee-ribbon 72s linear infinite reverse;
+}
+
 /* Bottom → top vertical text marquee (watermark overlay) */
 @keyframes marquee-vertical {
   from {
@@ -224,6 +228,7 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee,
   .animate-marquee-ribbon,
+  .animate-marquee-ribbon-reverse,
   .animate-marquee-vertical {
     animation: none;
   }

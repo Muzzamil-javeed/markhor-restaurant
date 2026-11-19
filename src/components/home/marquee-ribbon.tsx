@@ -67,17 +67,26 @@ function BeatRow({ beats }: { beats: Beat[] }) {
   );
 }
 
-/** Clean diagonal maroon ribbon — no white under-edge. */
+/** Single maroon ribbon, centered on cream → black cut. */
 export function HomeMarqueeRibbon() {
   const half = [...BEATS, ...BEATS];
 
   return (
-    <div className="relative isolate z-10 overflow-x-clip bg-[#ebe3de] pt-10 pb-8 sm:pt-12 sm:pb-10">
+    <div className="relative isolate z-10 overflow-x-clip pt-12 pb-12 sm:pt-14 sm:pb-14">
+      {/* 50% cream above / 50% popular black below — strip sits on the cut */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden
+        style={{
+          background:
+            "linear-gradient(to bottom, #ebe3de 0%, #ebe3de 50%, #120D0E 50%, #120D0E 100%)",
+        }}
+      />
+
       <div
         className={cn(
           "relative left-1/2 w-[125%] max-w-none -translate-x-1/2",
           "origin-center -rotate-[3.5deg] sm:w-[120%] sm:-rotate-[2.75deg]",
-          "mb-[-1.5rem] sm:mb-[-2rem]",
         )}
       >
         <div

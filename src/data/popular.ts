@@ -3,12 +3,12 @@ import type { MenuItem } from "@/data/menu";
 
 /** Signature home-page picks, in display order. */
 export const POPULAR_SLUGS = [
-  "smoked-brisket-tacos",
-  "beef-brisket",
-  "beef-ribs",
-  "beef-tenderloin-steak",
+  "birria-tacos",
   "the-beast",
-  "classic-mac-and-cheese",
+  "smoked-brisket-tacos",
+  "spicy-shrimp-taco",
+  "beef-ribs",
+  "smoked-chicken-tacos",
 ] as const;
 
 const bySlug = new Map(

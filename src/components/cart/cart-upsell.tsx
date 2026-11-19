@@ -49,7 +49,7 @@ function UpsellCard({
         "flex w-[10.75rem] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border",
         dark
           ? "border-cream/12 bg-[#140D0E]"
-          : "w-[12rem] border-line bg-white p-3",
+          : "w-[13.5rem] border-line bg-white p-3",
       )}
     >
       {dark ? (
@@ -57,29 +57,49 @@ function UpsellCard({
           name={item.name}
           slug={item.slug}
           itemId={item.id}
+          imageSrc={resolvedImage?.imageSrc}
+          imageSquareSrc={resolvedImage?.imageSquareSrc}
+          imageThumbSrc={resolvedImage?.imageThumbSrc}
           rounded="rounded-none"
           className="aspect-[4/3] shrink-0"
         />
       ) : null}
       <div className={cn("flex min-h-0 flex-1 flex-col gap-2.5", dark && "p-3")}>
-        <div className="min-w-0">
-          <p
-            className={cn(
-              "line-clamp-2 text-sm leading-snug font-medium",
-              dark ? "text-cream" : "text-ink",
-            )}
-            title={item.name}
-          >
-            {item.name}
-          </p>
-          <p
-            className={cn(
-              "mt-1 text-xs tabular-nums",
-              dark ? "text-cream/50" : "text-muted",
-            )}
-          >
-            {formatPKR(item.price)}
-          </p>
+        <div className={cn("min-w-0", !dark && "flex items-start gap-2.5")}>
+          {!dark ? (
+            <MenuImage
+              name={item.name}
+              slug={item.slug}
+              itemId={item.id}
+              imageSrc={resolvedImage?.imageSrc}
+              imageSquareSrc={resolvedImage?.imageSquareSrc}
+              imageThumbSrc={resolvedImage?.imageThumbSrc}
+              ratio="square"
+              rounded="rounded-xl"
+              overlay={false}
+              className="size-12 shrink-0 !aspect-square"
+              sizes="48px"
+            />
+          ) : null}
+          <div className="min-w-0 flex-1">
+            <p
+              className={cn(
+                "line-clamp-2 text-sm leading-snug font-medium",
+                dark ? "text-cream" : "text-ink",
+              )}
+              title={item.name}
+            >
+              {item.name}
+            </p>
+            <p
+              className={cn(
+                "mt-1 text-xs tabular-nums",
+                dark ? "text-cream/50" : "text-muted",
+              )}
+            >
+              {formatPKR(item.price)}
+            </p>
+          </div>
         </div>
         <button
           type="button"

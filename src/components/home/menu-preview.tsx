@@ -9,20 +9,20 @@ import { cn } from "@/lib/cn";
 
 const PREVIEW_FRAMES = [
   {
-    src: "/images/menu/overrides/beef-tenderloin-steak-1795087108943.webp",
-    alt: "Beef tenderloin steak",
+    src: "/images/home/banner/the-beast.jpg",
+    alt: "The Beast burger",
     tilt: "-rotate-2",
     width: "w-[88%] self-end",
   },
   {
-    src: "/images/menu/overrides/steak-and-eggs-1795087200016.webp",
-    alt: "Steak and eggs",
+    src: "/images/home/banner/smoked-brisket-tacos.jpg",
+    alt: "Smoked brisket tacos",
     tilt: "rotate-[1.5deg]",
     width: "w-[82%] self-start",
   },
   {
-    src: "/images/menu/overrides/angus-ribeye-grass-fed-aus-1795087344254.webp",
-    alt: "Angus ribeye",
+    src: "/images/home/banner/beef-brisket.jpg",
+    alt: "Beef brisket",
     tilt: "rotate-2",
     width: "w-[86%] self-end",
   },
@@ -62,7 +62,7 @@ export function HomeMenuPreview() {
                 <div
                   key={frame.src}
                   className={cn(
-                    "overflow-hidden rounded-xl border border-line bg-white p-2 shadow-sm",
+                    "overflow-hidden rounded-xl border border-brand/35 bg-transparent p-1 shadow-sm",
                     frame.tilt,
                     frame.width,
                   )}
