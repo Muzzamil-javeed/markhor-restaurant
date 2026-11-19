@@ -1,17 +1,28 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import {
+  useSyncExternalStore,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 import {
   Clock3,
   MapPin,
   Navigation,
   Phone,
   ShoppingBag,
+  type LucideProps,
 } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import { BrandLink } from "@/components/ui/brand-button";
+import {
+  FacebookIcon,
+  InstagramIcon,
+} from "@/components/ui/brand-social-icons";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionEyebrow } from "@/components/ui/section-eyebrow";
 import { site } from "@/data/site";
+import { cn } from "@/lib/cn";
 import { getKarachiParts } from "@/lib/hours";
 import { displayPhone, telHref } from "@/lib/phone";
 
@@ -20,52 +31,47 @@ function subscribe(onStoreChange: () => void) {
   return () => window.clearInterval(id);
 }
 
-function InstagramIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <rect x="3" y="3" width="18" height="18" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function FacebookIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-      aria-hidden
-    >
-      <path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v2H9v3h2v7h3v-7h3l1-3h-4V9c0-.6.4-1 1-1Z" />
-    </svg>
-  );
-}
-
-function SectionTitle({
+function InfoCard({
   icon: Icon,
+  title,
   children,
+  delay = 0,
 }: {
-  icon: typeof MapPin;
-  children: string;
+  icon: ComponentType<LucideProps>;
+  title: string;
+  children: ReactNode;
+  delay?: number;
 }) {
+  const reduce = useReducedMotion();
+
   return (
-    <h3 className="font-eyebrow flex items-center gap-2 text-[11px] font-semibold text-brand uppercase">
-      <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-brand/20 bg-tint text-brand">
-        <Icon className="size-3.5" strokeWidth={1.75} aria-hidden />
-      </span>
-      {children}
-    </h3>
+    <Reveal delay={delay}>
+      <motion.article
+        className={cn(
+          "group relative flex h-full flex-col overflow-hidden rounded-2xl",
+          "border border-brand/25 bg-white/80 backdrop-blur-sm",
+          "shadow-[0_14px_36px_rgba(94,15,29,0.1),0_0_0_1px_rgba(94,15,29,0.06)]",
+          "transition-[border-color,box-shadow] duration-300",
+          "hover:border-brand/50 hover:shadow-[0_20px_44px_rgba(94,15,29,0.18)]",
+        )}
+        whileHover={reduce ? undefined : { y: -6 }}
+        transition={{ type: "spring", stiffness: 320, damping: 24 }}
+      >
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/35 to-transparent"
+          aria-hidden
+        />
+        <div className="flex flex-1 flex-col p-5 sm:p-6">
+          <h3 className="font-eyebrow flex items-center gap-2.5 text-[11px] font-semibold tracking-[0.14em] text-brand uppercase">
+            <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-brand/25 bg-tint text-brand shadow-[0_6px_16px_rgba(94,15,29,0.12)] transition-transform duration-300 group-hover:scale-105">
+              <Icon className="size-3.5" strokeWidth={1.75} aria-hidden />
+            </span>
+            {title}
+          </h3>
+          <div className="mt-4 flex flex-1 flex-col">{children}</div>
+        </div>
+      </motion.article>
+    </Reveal>
   );
 }
 
@@ -78,100 +84,111 @@ export function HomeFindUs() {
   );
 
   return (
-    <section className="paper-texture bg-cream">
-      <div className="mx-auto w-full max-w-[1100px] px-4 py-16 lg:py-20">
+    <section className="relative overflow-hidden paper-texture bg-cream">
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden
+        style={{
+          background:
+            "radial-gradient(ellipse at 12% 0%, rgba(94,15,29,0.08), transparent 48%), radial-gradient(ellipse at 92% 100%, rgba(94,15,29,0.05), transparent 42%)",
+        }}
+      />
+
+      <div className="relative mx-auto w-full max-w-[1100px] px-4 py-16 lg:py-20">
         <Reveal>
           <SectionEyebrow>Check before you come</SectionEyebrow>
           <h2 className="font-display mt-3 max-w-3xl text-4xl leading-[1.05] tracking-tight text-ink uppercase sm:text-5xl">
             Come hungry. We&apos;ll handle the rest.
           </h2>
+          <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted">
+            DHA Phase 6 smokehouse — hours, directions, and a direct line when
+            you&apos;re ready to order.
+          </p>
         </Reveal>
 
-        <div className="mt-10 grid gap-8 border-t border-line pt-8 md:grid-cols-3">
-          <Reveal>
-            <SectionTitle icon={MapPin}>Find us</SectionTitle>
-            <p className="mt-3 text-sm leading-relaxed text-ink">
-              {site.address}
-            </p>
+        <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
+          <InfoCard icon={MapPin} title="Find us">
+            <p className="text-sm leading-relaxed text-ink/85">{site.address}</p>
             <a
               href={site.directions}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+              className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-brand/20 bg-tint px-3.5 py-2 text-sm font-semibold text-brand transition-all duration-300 hover:border-brand/40 hover:bg-brand hover:text-on-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
             >
               <Navigation className="size-3.5" aria-hidden />
               Get directions
             </a>
-          </Reveal>
+          </InfoCard>
 
-          <Reveal delay={0.05}>
-            <SectionTitle icon={Clock3}>Hours</SectionTitle>
-            <ul className="mt-3 flex flex-col gap-2.5 text-sm">
+          <InfoCard icon={Clock3} title="Hours" delay={0.06}>
+            <ul className="flex flex-col gap-2.5 text-sm">
               {site.hours.map((block) => {
                 const today =
                   dayIndex >= 0 && block.dayIndexes.includes(dayIndex);
                 return (
                   <li
                     key={block.id}
-                    className="rounded-xl bg-tint px-3 py-2.5 text-ink"
+                    className={cn(
+                      "rounded-xl border px-3.5 py-3 transition-colors duration-300",
+                      today
+                        ? "border-brand/35 bg-tint shadow-[0_8px_20px_rgba(94,15,29,0.08)]"
+                        : "border-line/80 bg-[#FBF9F8]",
+                    )}
                   >
-                    <span className="inline-flex flex-wrap items-center gap-2 font-semibold">
+                    <span className="inline-flex flex-wrap items-center gap-2 font-semibold text-ink">
                       <Clock3
                         className="size-3.5 shrink-0 text-brand/70"
                         aria-hidden
                       />
                       {block.days}
                       {today ? (
-                        <span className="text-[10px] font-semibold tracking-wide text-brand uppercase">
+                        <span className="rounded-full bg-brand px-2 py-0.5 text-[9px] font-semibold tracking-[0.12em] text-on-brand uppercase">
                           Today
                         </span>
                       ) : null}
                     </span>
-                    <p className="mt-1 pl-5 text-muted">{block.label}</p>
+                    <p className="mt-1.5 pl-5 text-muted">{block.label}</p>
                   </li>
                 );
               })}
             </ul>
-          </Reveal>
+          </InfoCard>
 
-          <Reveal delay={0.1} className="min-w-0">
-            <SectionTitle icon={Phone}>Call or order</SectionTitle>
-            <div className="mt-3 flex flex-col gap-4">
+          <InfoCard icon={Phone} title="Call or order" delay={0.12}>
+            <a
+              href={telHref()}
+              className="block break-all font-heading text-xl font-semibold tracking-tight text-ink transition-colors duration-300 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 sm:break-normal"
+            >
+              {phone}
+            </a>
+            <BrandLink
+              href="/menu"
+              className="mt-4 inline-flex w-fit items-center gap-2 shadow-[0_12px_28px_rgba(94,15,29,0.28)] transition-transform duration-300 hover:scale-[1.02]"
+            >
+              <ShoppingBag className="size-4" aria-hidden />
+              Order online
+            </BrandLink>
+            <div className="mt-4 flex flex-wrap gap-2.5">
               <a
-                href={telHref()}
-                className="block break-all font-heading text-lg font-semibold tracking-tight text-ink transition-colors hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 sm:break-normal"
+                href={site.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3.5 py-2 text-xs font-semibold text-ink shadow-sm transition-transform duration-300 hover:scale-[1.03] hover:border-brand/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
               >
-                {phone}
+                <InstagramIcon className="size-[1.05rem]" />
+                Instagram
               </a>
-              <BrandLink
-                href="/menu"
-                className="inline-flex w-fit items-center gap-2"
+              <a
+                href={site.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3.5 py-2 text-xs font-semibold text-ink shadow-sm transition-transform duration-300 hover:scale-[1.03] hover:border-brand/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
               >
-                <ShoppingBag className="size-4" aria-hidden />
-                Order online
-              </BrandLink>
-              <div className="flex flex-wrap gap-2.5">
-                <a
-                  href={site.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-brand/20 bg-tint px-3 py-1.5 text-sm font-medium text-brand transition-colors hover:bg-brand hover:text-on-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-                >
-                  <InstagramIcon className="size-3.5" />
-                  Instagram
-                </a>
-                <a
-                  href={site.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-brand/20 bg-tint px-3 py-1.5 text-sm font-medium text-brand transition-colors hover:bg-brand hover:text-on-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-                >
-                  <FacebookIcon className="size-3.5" />
-                  Facebook
-                </a>
-              </div>
+                <FacebookIcon className="size-[1.05rem]" />
+                Facebook
+              </a>
             </div>
-          </Reveal>
+          </InfoCard>
         </div>
       </div>
     </section>
