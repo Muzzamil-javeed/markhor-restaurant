@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkoutFormSchema } from './src/lib/checkout-schema';
+import { checkoutFormSchema } from "@/lib/checkout-schema";
 
 const base = {
   orderType: 'delivery' as const,
