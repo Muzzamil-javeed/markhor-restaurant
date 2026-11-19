@@ -4,63 +4,14 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { popularPicks } from "@/data/popular";
 
-const SLIDES = [
-  { src: "/images/home/menu-preview.jpg", alt: "Smokehouse grill plates" },
-  { src: "/images/menu/beef-brisket.jpg", alt: "Markhor smoked brisket" },
-  { src: "/images/home/how-it-works.jpg", alt: "Plated smoked meat" },
-  { src: "/images/menu/the-beast.jpg", alt: "The Beast burger" },
-  {
-    src: "/images/menu/brisket-burger-highway-man-style.jpg",
-    alt: "Highway Man brisket burger",
-  },
-  { src: "/images/hero.jpg", alt: "Markhor smokehouse grill" },
-  { src: "/images/home/cart-banner.jpg", alt: "Markhor cart favourites" },
-  { src: "/images/home/sides-dark.jpg", alt: "Smokehouse sides" },
-  { src: "/images/menu/angus-ribeye-grass-fed-aus.jpg", alt: "Angus ribeye" },
-  { src: "/images/menu/beef-mushroom-melt.jpg", alt: "Beef mushroom melt" },
-  { src: "/images/menu/beef-ribs.jpg", alt: "Beef ribs" },
-  {
-    src: "/images/menu/beef-ribs-and-mac-burger.jpg",
-    alt: "Beef ribs and mac burger",
-  },
-  { src: "/images/menu/beef-tenderloin-steak.jpg", alt: "Beef tenderloin" },
-  { src: "/images/menu/brisket-500g.jpg", alt: "Brisket 500g" },
-  {
-    src: "/images/menu/brisket-and-cream-cheese-stuffed-texas-twinkies.jpg",
-    alt: "Texas twinkies",
-  },
-  { src: "/images/menu/brisket-loaded-fries.jpg", alt: "Brisket loaded fries" },
-  {
-    src: "/images/menu/butterflied-jumbo-prawns.jpg",
-    alt: "Butterflied jumbo prawns",
-  },
-  {
-    src: "/images/menu/classic-texas-style-smoked-beef-burger.jpg",
-    alt: "Texas smoked beef burger",
-  },
-  { src: "/images/menu/filet-mignon.jpg", alt: "Filet mignon" },
-  { src: "/images/menu/fresh-green-salad.jpg", alt: "Fresh green salad" },
-  {
-    src: "/images/menu/kansas-city-brisket-nachos.jpg",
-    alt: "Kansas City brisket nachos",
-  },
-  {
-    src: "/images/menu/loaded-baked-potato-with-brisket-and-cheese.jpg",
-    alt: "Loaded baked potato",
-  },
-  {
-    src: "/images/menu/midwest-smoked-pulled-beef-burger.jpg",
-    alt: "Midwest pulled beef burger",
-  },
-  { src: "/images/menu/pastrami-on-rye.jpg", alt: "Pastrami on rye" },
-  {
-    src: "/images/menu/philly-cheesesteak-burger.jpg",
-    alt: "Philly cheesesteak burger",
-  },
-  { src: "/images/menu/smoked-brisket-tacos.jpg", alt: "Smoked brisket tacos" },
-  { src: "/images/menu/stone-grilled-chicken.jpg", alt: "Stone grilled chicken" },
-] as const;
+/** Same unique dishes as Popular picks — no repeats. */
+const SLIDES = popularPicks.map((item) => ({
+  id: item.slug,
+  src: `/images/menu/${item.slug}.webp`,
+  alt: item.name,
+}));
 
 const ease = [0.25, 0.8, 0.25, 1] as const;
 const AUTO_MS = 5000;
@@ -169,7 +120,7 @@ export function OffersCoverflow() {
 
               return (
                 <motion.div
-                  key={slide.src}
+                  key={slide.id}
                   className="absolute h-[90%] w-[62%] overflow-hidden rounded-[1.5rem] border border-line/70 bg-transparent will-change-transform sm:w-[58%]"
                   style={{
                     zIndex: 40 - abs,

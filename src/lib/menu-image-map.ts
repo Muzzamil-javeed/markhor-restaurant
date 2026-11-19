@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { prisma } from "@/lib/db";
+import { withPrismaRetry } from "@/lib/db";
 import { MENU_CACHE_TAG } from "@/lib/menu-cache";
 import {
   type MenuImageEntry,
@@ -28,33 +28,30 @@ function entryFromRow(row: {
   };
 }
 
-/** Load every admin-uploaded dish photo (overrides + custom items). */
-export async function getMenuImageMap(): Promise<MenuImageMap> {
-  "use cache";
-  cacheTag(MENU_CACHE_TAG);
-  cacheLife("minutes");
-
-  const [overrides, customs] = await Promise.all([
-    prisma.menuOverride.findMany({
-      where: { imagePath: { not: null } },
-      select: {
-        itemId: true,
-        imagePath: true,
-        imageSquarePath: true,
-        imageThumbPath: true,
-      },
-    }),
-    prisma.menuCustomItem.findMany({
-      where: { imagePath: { not: null }, hidden: false },
-      select: {
-        id: true,
-        slug: true,
-        imagePath: true,
-        imageSquarePath: true,
-        imageThumbPath: true,
-      },
-    }),
-  ]);
+async function loadMenuImageMap(): Promise<MenuImageMap> {
+  const [overrides, customs] = await withPrismaRetry((db) =>
+    Promise.all([
+      db.menuOverride.findMany({
+        where: { imagePath: { not: null } },
+        select: {
+          itemId: true,
+          imagePath: true,
+          imageSquarePath: true,
+          imageThumbPath: true,
+        },
+      }),
+      db.menuCustomItem.findMany({
+        where: { imagePath: { not: null }, hidden: false },
+        select: {
+          id: true,
+          slug: true,
+          imagePath: true,
+          imageSquarePath: true,
+          imageThumbPath: true,
+        },
+      }),
+    ]),
+  );
 
   const map: MenuImageMap = {};
 
@@ -74,4 +71,19 @@ export async function getMenuImageMap(): Promise<MenuImageMap> {
   }
 
   return map;
+}
+
+/** Load every admin-uploaded dish photo (overrides + custom items). */
+export async function getMenuImageMap(): Promise<MenuImageMap> {
+  "use cache";
+  cacheTag(MENU_CACHE_TAG);
+  cacheLife("minutes");
+
+  try {
+    return await loadMenuImageMap();
+  } catch (error) {
+    // Storefront should still render with stock photos if DB is briefly down.
+    console.error("[getMenuImageMap]", error);
+    return {};
+  }
 }

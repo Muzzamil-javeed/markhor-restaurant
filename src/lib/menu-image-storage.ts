@@ -51,7 +51,9 @@ export async function storeMenuOverrideImages(input: {
   thumb: Buffer;
 }): Promise<StoredMenuImages> {
   const safe = input.itemId.replace(/[^a-zA-Z0-9_-]/g, "_");
-  const base = `images/menu/overrides/${safe}`;
+  // Unique path on every replace so browsers / next/image never keep a stale file.
+  const stamp = Date.now();
+  const base = `images/menu/overrides/${safe}-${stamp}`;
 
   const [imagePath, imageSquarePath, imageThumbPath] = await Promise.all([
     putOne(`${base}.webp`, input.landscape, "image/webp"),

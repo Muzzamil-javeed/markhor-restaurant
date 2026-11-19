@@ -8,6 +8,7 @@ import { HomePopularPicks } from "@/components/home/popular-picks";
 import { HomeTableAndReviews } from "@/components/home/table-and-reviews";
 import { HomeMarqueeRibbon } from "@/components/home/marquee-ribbon";
 import { HomeTicker } from "@/components/home/ticker";
+import { VerticalBrandMarquee } from "@/components/home/vertical-brand-marquee";
 import { buildPageMetadata, SITE_TITLE } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -28,9 +29,15 @@ export default function Home() {
       />
       <HomeHero />
       <HomeTicker />
-      <HomeOffersBoard />
-      <HomeMenuPreview />
-      <HomeMarqueeRibbon />
+      {/* Brand rail: behind maroon ribbon → up through menu → Offers top */}
+      <div className="relative">
+        <VerticalBrandMarquee />
+        <HomeOffersBoard />
+        <HomeMenuPreview />
+        <div className="relative z-20">
+          <HomeMarqueeRibbon />
+        </div>
+      </div>
       <HomePopularPicks />
       <HomeHowItWorks />
       <HomeTableAndReviews />

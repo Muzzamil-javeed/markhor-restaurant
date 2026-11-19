@@ -30,8 +30,8 @@ const PREVIEW_FRAMES = [
 
 export function HomeMenuPreview() {
   return (
-    <section className="paper-texture bg-tan">
-      <div className="mx-auto w-full max-w-[1100px] px-4 py-16 lg:py-20">
+    <section className="relative overflow-hidden paper-texture bg-tan">
+      <div className="relative z-[1] mx-auto w-full max-w-[1100px] px-4 py-16 lg:py-20">
         <Reveal>
           <SectionEyebrow>The menu</SectionEyebrow>
           <h2 className="font-display mt-3 max-w-2xl text-4xl leading-[1.05] tracking-tight text-ink uppercase sm:text-5xl">

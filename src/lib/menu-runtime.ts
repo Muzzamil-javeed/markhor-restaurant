@@ -4,7 +4,7 @@ import type { Category, MenuItem } from "@/data/menu-types";
 import { stockImageForSlug } from "@/data/menu-photos";
 import { hasImageQuery } from "@/data/images";
 import { slugify } from "@/data/slug";
-import { prisma } from "@/lib/db";
+import { prisma, withPrismaRetry } from "@/lib/db";
 import { MENU_CACHE_TAG } from "@/lib/menu-cache";
 
 export type MenuOverrideRow = {
@@ -117,34 +117,38 @@ export async function getRuntimeMenu(): Promise<Category[]> {
   cacheTag(MENU_CACHE_TAG);
   cacheLife("minutes");
 
-  const [overrides, customs] = await Promise.all([
-    prisma.menuOverride.findMany(),
-    prisma.menuCustomItem.findMany(),
-  ]);
-  const byId = new Map(overrides.map((entry) => [entry.itemId, entry]));
-  const customsByCategory = new Map<string, CustomMenuItemRow[]>();
-  for (const row of customs) {
-    const list = customsByCategory.get(row.categoryId) ?? [];
-    list.push(row);
-    customsByCategory.set(row.categoryId, list);
+  try {
+    const [overrides, customs] = await withPrismaRetry((db) =>
+      Promise.all([db.menuOverride.findMany(), db.menuCustomItem.findMany()]),
+    );
+    const byId = new Map(overrides.map((entry) => [entry.itemId, entry]));
+    const customsByCategory = new Map<string, CustomMenuItemRow[]>();
+    for (const row of customs) {
+      const list = customsByCategory.get(row.categoryId) ?? [];
+      list.push(row);
+      customsByCategory.set(row.categoryId, list);
+    }
+
+    return menu
+      .map((category) => {
+        const staticItems = category.items
+          .map((item) => applyOverride(item, byId.get(item.id)))
+          .filter((item): item is RuntimeMenuItem => item !== null);
+
+        const customItems = (customsByCategory.get(category.id) ?? [])
+          .map((row) => applyCustom(row))
+          .filter((item): item is RuntimeMenuItem => item !== null);
+
+        return {
+          ...category,
+          items: [...staticItems, ...customItems],
+        };
+      })
+      .filter((category) => category.items.length > 0);
+  } catch (error) {
+    console.error("[getRuntimeMenu]", error);
+    return staticMenuCategories();
   }
-
-  return menu
-    .map((category) => {
-      const staticItems = category.items
-        .map((item) => applyOverride(item, byId.get(item.id)))
-        .filter((item): item is RuntimeMenuItem => item !== null);
-
-      const customItems = (customsByCategory.get(category.id) ?? [])
-        .map((row) => applyCustom(row))
-        .filter((item): item is RuntimeMenuItem => item !== null);
-
-      return {
-        ...category,
-        items: [...staticItems, ...customItems],
-      };
-    })
-    .filter((category) => category.items.length > 0);
 }
 
 export async function getRuntimeMenuItem(
@@ -154,19 +158,25 @@ export async function getRuntimeMenuItem(
   cacheTag(MENU_CACHE_TAG);
   cacheLife("minutes");
 
-  const base = staticItemById(itemId);
-  if (base) {
-    const override = await prisma.menuOverride.findUnique({
-      where: { itemId },
-    });
-    return applyOverride(base, override);
-  }
+  try {
+    const base = staticItemById(itemId);
+    if (base) {
+      const override = await withPrismaRetry((db) =>
+        db.menuOverride.findUnique({ where: { itemId } }),
+      );
+      return applyOverride(base, override);
+    }
 
-  const custom = await prisma.menuCustomItem.findUnique({
-    where: { id: itemId },
-  });
-  if (!custom) return null;
-  return applyCustom(custom);
+    const custom = await withPrismaRetry((db) =>
+      db.menuCustomItem.findUnique({ where: { id: itemId } }),
+    );
+    if (!custom) return null;
+    return applyCustom(custom);
+  } catch (error) {
+    console.error("[getRuntimeMenuItem]", error);
+    const base = staticItemById(itemId);
+    return base ? applyOverride(base, null) : null;
+  }
 }
 
 export async function resolveMenuItemForPricing(
@@ -355,8 +365,13 @@ export function previewImageForAdmin(input: {
   slug: string;
   imagePath: string | null;
   hasStaticPhoto: boolean;
+  /** Kept for callers; cache-bust uses unique upload filenames, not ?v=. */
+  updatedAt?: Date | string | null;
 }) {
-  if (input.imagePath) return input.imagePath;
+  if (input.imagePath) {
+    // Strip any legacy ?v= so next/image never chokes on query strings.
+    return input.imagePath.split("?")[0]!;
+  }
   if (input.hasStaticPhoto || hasImageQuery(input.slug)) {
     return `/images/menu/${input.slug}.webp`;
   }

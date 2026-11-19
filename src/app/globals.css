@@ -207,9 +207,24 @@
   animation: marquee-ribbon 72s linear infinite;
 }
 
+/* Bottom → top vertical text marquee (watermark overlay) */
+@keyframes marquee-vertical {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical 180s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee,
-  .animate-marquee-ribbon {
+  .animate-marquee-ribbon,
+  .animate-marquee-vertical {
     animation: none;
   }
 }
@@ -725,6 +740,15 @@ html {
   stroke-dasharray: 1.2 1.6;
 }
 
+@keyframes admin-upload-bar {
+  0% {
+    left: -40%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
 @keyframes admin-order-green-blink {
   0%,
   100% {
@@ -754,6 +778,17 @@ html {
   paint-order: stroke fill;
   text-shadow: none;
   animation: how-step-neon-flicker 4.2s linear infinite;
+}
+
+/* Light How-it-works section — outlined brand numbers on cream */
+.how-step-light {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(94, 15, 29, 0.28);
+  paint-order: stroke fill;
+  transition: -webkit-text-stroke-color 0.35s ease;
+}
+.group:hover .how-step-light {
+  -webkit-text-stroke-color: rgba(232, 120, 48, 0.75);
 }
 
 @keyframes how-step-neon-flicker {
@@ -841,6 +876,10 @@ html {
   .admin-order-new-blink,
   .how-step-neon {
     animation: none;
+  }
+
+  .group:hover .how-step-light {
+    -webkit-text-stroke-color: rgba(94, 15, 29, 0.28);
   }
 
   .hero-fire-char {

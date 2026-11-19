@@ -20,6 +20,7 @@ export function SectionEyebrow({
       className={cn(
         "font-eyebrow text-[11px] font-semibold uppercase",
         tones[tone],
+        className?.includes("text-center") && "w-full",
         className,
       )}
     >

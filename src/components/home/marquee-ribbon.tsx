@@ -67,22 +67,23 @@ function BeatRow({ beats }: { beats: Beat[] }) {
   );
 }
 
+/** Clean diagonal maroon ribbon — no white under-edge. */
 export function HomeMarqueeRibbon() {
   const half = [...BEATS, ...BEATS];
 
   return (
-    <div className="relative isolate overflow-x-clip bg-[#ebe3de] py-12 sm:py-14 md:py-16">
-      {/* Wide tilted band stays inside overflow-x-clip — no page gap on mobile */}
+    <div className="relative isolate z-10 overflow-x-clip bg-[#ebe3de] pt-10 pb-8 sm:pt-12 sm:pb-10">
       <div
         className={cn(
-          "relative left-1/2 w-[120%] max-w-none -translate-x-1/2 py-5 sm:w-[115%] sm:py-6",
-          "origin-center -rotate-[3.5deg] sm:-rotate-[2.75deg]",
+          "relative left-1/2 w-[125%] max-w-none -translate-x-1/2",
+          "origin-center -rotate-[3.5deg] sm:w-[120%] sm:-rotate-[2.75deg]",
+          "mb-[-1.5rem] sm:mb-[-2rem]",
         )}
       >
         <div
           className={cn(
-            "w-full overflow-hidden border-y border-brand/20 bg-brand",
-            "shadow-[0_18px_40px_rgba(94,15,29,0.18)]",
+            "w-full overflow-hidden bg-brand",
+            "shadow-[0_16px_36px_rgba(94,15,29,0.28)]",
             "py-5 sm:py-6 md:py-7",
           )}
         >

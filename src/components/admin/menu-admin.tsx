@@ -3,31 +3,30 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ImagePlus, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { LayoutGrid, List, Loader2, Plus, X } from "lucide-react";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { MenuAdminAddDialog } from "@/components/admin/menu-admin-add-dialog";
-import { formatPKR } from "@/lib/format";
+import { MenuAdminItem } from "@/components/admin/menu-admin-item";
+import type {
+  MenuAdminItem as MenuAdminItemData,
+  MenuAdminViewMode,
+} from "@/components/admin/menu-admin-types";
 import { cn } from "@/lib/cn";
 import { useToastStore } from "@/store/toast";
 
-type MenuAdminItem = {
-  id: string;
-  slug: string;
-  name: string;
-  baseName: string;
-  categoryId: string;
-  categoryName: string;
-  available: boolean;
-  hidden: boolean;
-  basePrice: number;
-  priceOverride: number | null;
-  nameOverride: string | null;
-  imagePath: string | null;
-  previewImage: string;
-  hasStaticPhoto: boolean;
-  isCustom: boolean;
-};
-
 type CategoryOption = { id: string; name: string };
+
+const VIEW_STORAGE_KEY = "markhor-admin-menu-view";
+
+function readStoredView(): MenuAdminViewMode {
+  if (typeof window === "undefined") return "card";
+  try {
+    const value = window.localStorage.getItem(VIEW_STORAGE_KEY);
+    return value === "list" ? "list" : "card";
+  } catch {
+    return "card";
+  }
+}
 
 async function readJson<T extends { error?: string }>(
   response: Response,
@@ -50,16 +49,20 @@ async function readJson<T extends { error?: string }>(
 export function MenuAdmin() {
   const router = useRouter();
   const showToast = useToastStore((state) => state.show);
-  const [items, setItems] = useState<MenuAdminItem[]>([]);
+  const [items, setItems] = useState<MenuAdminItemData[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [query, setQuery] = useState("");
+  const [viewMode, setViewMode] = useState<MenuAdminViewMode>("card");
   const [photoFilter, setPhotoFilter] = useState<
     "all" | "missing" | "stock" | "uploaded"
   >("all");
   const [matchStyle, setMatchStyle] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [editing, setEditing] = useState<MenuAdminItem | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<MenuAdminItemData | null>(null);
+  const [editing, setEditing] = useState<MenuAdminItemData | null>(null);
   const [draftName, setDraftName] = useState("");
   const [draftPrice, setDraftPrice] = useState("");
   const [draftAvailable, setDraftAvailable] = useState(true);
@@ -76,7 +79,7 @@ export function MenuAdmin() {
       return;
     }
     const data = await readJson<{
-      items?: MenuAdminItem[];
+      items?: MenuAdminItemData[];
       categories?: CategoryOption[];
       error?: string;
     }>(response);
@@ -92,10 +95,29 @@ export function MenuAdmin() {
 
   useEffect(() => {
     const id = window.setTimeout(() => {
+      setViewMode(readStoredView());
       void load();
     }, 0);
     return () => window.clearTimeout(id);
   }, [load]);
+
+  useEffect(() => {
+    if (!viewing) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setViewing(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewing]);
+
+  const setView = (mode: MenuAdminViewMode) => {
+    setViewMode(mode);
+    try {
+      window.localStorage.setItem(VIEW_STORAGE_KEY, mode);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -113,7 +135,7 @@ export function MenuAdmin() {
     });
   }, [items, query, photoFilter]);
 
-  const openEdit = (item: MenuAdminItem) => {
+  const openEdit = (item: MenuAdminItemData) => {
     setEditing(item);
     setDraftName(item.name);
     setDraftPrice(String(item.priceOverride ?? item.basePrice));
@@ -211,8 +233,11 @@ export function MenuAdmin() {
     }
   };
 
-  const uploadImage = async (item: MenuAdminItem, file: File) => {
+  const uploadImage = async (item: MenuAdminItemData, file: File) => {
+    const previewUrl = URL.createObjectURL(file);
     setBusyId(item.id);
+    setUploadingId(item.id);
+    setUploadPreview(previewUrl);
     try {
       const body = new FormData();
       body.append("file", file);
@@ -221,20 +246,47 @@ export function MenuAdmin() {
         method: "POST",
         body,
       });
-      const data = await readJson<{ error?: string }>(response);
+      const data = await readJson<{
+        error?: string;
+        imagePath?: string;
+        imageSquarePath?: string;
+        imageThumbPath?: string;
+      }>(response);
       if (!response.ok) {
         setError(data.error ?? "Image upload failed.");
         showToast(data.error ?? "Image upload failed.");
         return;
       }
+      // Instant thumbnail swap (unique path / cache-bust) before list reload.
+      if (data.imagePath) {
+        setItems((current) =>
+          current.map((row) =>
+            row.id === item.id
+              ? {
+                  ...row,
+                  imagePath: data.imagePath ?? row.imagePath,
+                  previewImage: data.imagePath!,
+                }
+              : row,
+          ),
+        );
+        setViewing((current) =>
+          current?.id === item.id
+            ? { ...current, previewImage: data.imagePath!, imagePath: data.imagePath! }
+            : current,
+        );
+      }
       showToast("Photo uploaded — live on the menu.");
       await load();
     } finally {
+      URL.revokeObjectURL(previewUrl);
+      setUploadPreview(null);
+      setUploadingId(null);
       setBusyId(null);
     }
   };
 
-  const removePhoto = async (item: MenuAdminItem) => {
+  const removePhoto = async (item: MenuAdminItemData) => {
     if (!item.imagePath) return;
     if (!window.confirm(`Remove uploaded photo for “${item.name}”? Stock will show.`)) {
       return;
@@ -257,7 +309,7 @@ export function MenuAdmin() {
     }
   };
 
-  const removeItem = async (item: MenuAdminItem) => {
+  const removeItem = async (item: MenuAdminItemData) => {
     if (!window.confirm(`Hide “${item.name}” from the front menu?`)) return;
     setBusyId(item.id);
     try {
@@ -277,7 +329,7 @@ export function MenuAdmin() {
     }
   };
 
-  const restoreItem = async (item: MenuAdminItem) => {
+  const restoreItem = async (item: MenuAdminItemData) => {
     setBusyId(item.id);
     try {
       const response = await fetch(`/api/admin/menu/${item.id}`, {
@@ -356,6 +408,41 @@ export function MenuAdmin() {
           />
           Match site style on upload
         </label>
+
+        <div
+          className="ml-auto inline-flex items-center rounded-full border border-line bg-white p-1"
+          role="group"
+          aria-label="Menu layout"
+        >
+          <button
+            type="button"
+            onClick={() => setView("list")}
+            className={cn(
+              "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40",
+              viewMode === "list"
+                ? "bg-brand text-on-brand"
+                : "text-muted hover:text-ink",
+            )}
+            aria-pressed={viewMode === "list"}
+          >
+            <List className="size-3.5" aria-hidden />
+            List
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("card")}
+            className={cn(
+              "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40",
+              viewMode === "card"
+                ? "bg-brand text-on-brand"
+                : "text-muted hover:text-ink",
+            )}
+            aria-pressed={viewMode === "card"}
+          >
+            <LayoutGrid className="size-3.5" aria-hidden />
+            Cards
+          </button>
+        </div>
       </div>
 
       {error ? (
@@ -367,64 +454,34 @@ export function MenuAdmin() {
         </p>
       ) : null}
 
-      <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
-        {filtered.map((item) => {
-          const effective = item.priceOverride ?? item.basePrice;
-          return (
-            <li
-              key={item.id}
+      <LayoutGroup>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={viewMode}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <ul
               className={cn(
-                "flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between",
-                item.hidden && "bg-[#faf7f5] opacity-75",
+                viewMode === "card"
+                  ? "grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
+                  : "divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white",
               )}
             >
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-line bg-[#1a0c0e]">
-                  <Image
-                    src={item.previewImage}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="56px"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate font-medium text-ink">
-                    {item.name}
-                    {item.isCustom ? (
-                      <span className="ml-2 text-[10px] font-semibold tracking-wide text-brand uppercase">
-                        New
-                      </span>
-                    ) : null}
-                  </p>
-                  <p className="text-xs text-muted">
-                    {item.categoryName} · {formatPKR(effective)}
-                    {item.priceOverride != null ? " (override)" : ""}
-                    {item.hidden ? " · Hidden" : ""}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <label className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-xs font-medium">
-                  <span
-                    className={
-                      item.available && !item.hidden
-                        ? "text-ink"
-                        : "text-destructive"
-                    }
-                  >
-                    {item.hidden
-                      ? "Hidden"
-                      : item.available
-                        ? "Available"
-                        : "Sold out"}
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={item.available && !item.hidden}
-                    disabled={busyId === item.id || item.hidden}
-                    onChange={async () => {
+              <AnimatePresence initial={false}>
+                {filtered.map((item) => (
+                  <MenuAdminItem
+                    key={`${viewMode}-${item.id}`}
+                    item={item}
+                    layout={viewMode}
+                    busy={busyId === item.id}
+                    uploading={uploadingId === item.id}
+                    uploadPreview={uploadPreview}
+                    uploadLocked={Boolean(uploadingId)}
+                    onView={() => setViewing(item)}
+                    onToggleAvailable={async () => {
                       setBusyId(item.id);
                       try {
                         const response = await fetch(
@@ -450,74 +507,18 @@ export function MenuAdmin() {
                         setBusyId(null);
                       }
                     }}
-                    className="size-4 rounded border-line text-brand"
-                    aria-label={`Toggle availability for ${item.name}`}
+                    onPickPhoto={(file) => void uploadImage(item, file)}
+                    onUseStock={() => void removePhoto(item)}
+                    onEdit={() => openEdit(item)}
+                    onRestore={() => void restoreItem(item)}
+                    onDelete={() => void removeItem(item)}
                   />
-                </label>
-
-                <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-line px-3 text-xs font-semibold text-ink hover:bg-tint">
-                  <ImagePlus className="size-3.5" aria-hidden />
-                  {item.imagePath ? "Replace" : "Photo"}
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="sr-only"
-                    disabled={busyId === item.id}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) void uploadImage(item, file);
-                      event.target.value = "";
-                    }}
-                  />
-                </label>
-
-                {item.imagePath ? (
-                  <button
-                    type="button"
-                    disabled={busyId === item.id}
-                    onClick={() => void removePhoto(item)}
-                    className="inline-flex h-9 items-center rounded-full border border-line px-3 text-xs font-semibold text-muted hover:bg-tint"
-                  >
-                    Use stock
-                  </button>
-                ) : null}
-
-                <button
-                  type="button"
-                  disabled={busyId === item.id}
-                  onClick={() => openEdit(item)}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line px-3 text-xs font-semibold text-ink hover:bg-tint"
-                >
-                  <Pencil className="size-3.5" aria-hidden />
-                  Edit
-                </button>
-
-                {item.hidden ? (
-                  <button
-                    type="button"
-                    disabled={busyId === item.id}
-                    onClick={() => void restoreItem(item)}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line px-3 text-xs font-semibold text-ink hover:bg-tint"
-                  >
-                    <RotateCcw className="size-3.5" aria-hidden />
-                    Restore
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    disabled={busyId === item.id}
-                    onClick={() => void removeItem(item)}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-full border border-destructive/35 px-3 text-xs font-semibold text-destructive hover:bg-destructive/5"
-                  >
-                    <Trash2 className="size-3.5" aria-hidden />
-                    Delete
-                  </button>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+                ))}
+              </AnimatePresence>
+            </ul>
+          </motion.div>
+        </AnimatePresence>
+      </LayoutGroup>
 
       {adding ? (
         <MenuAdminAddDialog
@@ -534,6 +535,79 @@ export function MenuAdmin() {
           onClose={() => setAdding(false)}
           onSave={() => void saveNew()}
         />
+      ) : null}
+
+      {viewing ? (
+        <div
+          className="animate-overlay-in fixed inset-0 z-[60] flex items-center justify-center bg-ink/70 p-4 backdrop-blur-[3px]"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Full photo — ${viewing.name}`}
+          onClick={() => setViewing(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setViewing(null)}
+            className="absolute top-4 right-4 z-[1] inline-flex size-11 items-center justify-center rounded-full bg-white/95 text-ink shadow-md transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            aria-label="Close full photo"
+          >
+            <X className="size-5" aria-hidden />
+          </button>
+          <div
+            className="animate-pop-in relative flex max-h-[min(90vh,920px)] w-full max-w-3xl flex-col items-center gap-3"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="relative aspect-square w-full max-h-[min(82vh,860px)] overflow-hidden rounded-2xl border border-white/20 bg-[#1a0c0e] shadow-2xl">
+              <Image
+                src={viewing.previewImage}
+                alt={viewing.name}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 768px"
+                priority
+              />
+            </div>
+            <p className="text-center text-sm font-medium text-white/90">
+              {viewing.name}
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      {uploadingId ? (
+        <div
+          className="animate-overlay-in fixed inset-0 z-[70] flex items-center justify-center bg-ink/45 p-4 backdrop-blur-[3px]"
+          role="alert"
+          aria-live="assertive"
+          aria-busy="true"
+        >
+          <div className="animate-pop-in flex w-full max-w-xs flex-col items-center gap-4 rounded-2xl border border-line bg-white px-8 py-8 shadow-xl">
+            <div className="relative flex size-14 items-center justify-center">
+              <span
+                className="absolute inset-0 rounded-full border-2 border-brand/15"
+                aria-hidden
+              />
+              <Loader2
+                className="size-8 animate-spin text-brand"
+                aria-hidden
+              />
+            </div>
+            <div className="text-center">
+              <p className="font-heading text-sm font-semibold text-ink">
+                Uploading photo…
+              </p>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted">
+                Processing and matching site style. Please wait.
+              </p>
+            </div>
+            <div
+              className="relative h-1 w-full overflow-hidden rounded-full bg-line"
+              aria-hidden
+            >
+              <div className="absolute inset-y-0 w-2/5 animate-[admin-upload-bar_1.15s_ease-in-out_infinite] rounded-full bg-brand" />
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {editing ? (

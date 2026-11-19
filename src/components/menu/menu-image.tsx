@@ -23,6 +23,8 @@ type MenuImageProps = {
   ratio?: "card" | "square";
   priority?: boolean;
   sizes?: string;
+  /** Soft bottom vignette (default on). Turn off for light cards. */
+  overlay?: boolean;
 };
 
 /**
@@ -40,6 +42,7 @@ export function MenuImage({
   ratio = "card",
   priority = false,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
+  overlay = true,
 }: MenuImageProps) {
   const resolvedSlug = slug ?? slugify(name);
   const resolvedId = itemId ?? resolvedSlug;
@@ -68,10 +71,11 @@ export function MenuImage({
         : image.src;
     const list = [preferred];
     if (upload?.imageSrc) {
-      list.push(`/images/menu/overrides/${resolvedSlug}.webp`);
-      list.push(`/images/menu/overrides/${resolvedSlug}.jpg`);
       if (upload.imageSquareSrc) list.push(upload.imageSquareSrc);
       if (upload.imageThumbSrc) list.push(upload.imageThumbSrc);
+      // Legacy fixed override paths (pre unique-stamp uploads).
+      list.push(`/images/menu/overrides/${resolvedId}.webp`);
+      list.push(`/images/menu/overrides/${resolvedSlug}.webp`);
     }
     if (menuPhotoSlugs.has(resolvedSlug)) {
       list.push(`/images/menu/${resolvedSlug}.jpg`);
@@ -109,10 +113,12 @@ export function MenuImage({
           )
         }
       />
-      <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#140D0E]/70 via-[#140D0E]/15 to-transparent"
-        aria-hidden
-      />
+      {overlay ? (
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#140D0E]/70 via-[#140D0E]/15 to-transparent"
+          aria-hidden
+        />
+      ) : null}
     </div>
   );
 }

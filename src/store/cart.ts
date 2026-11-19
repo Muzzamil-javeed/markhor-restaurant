@@ -69,7 +69,8 @@ function mergeLine(
         ? {
             ...line,
             quantity: line.quantity + quantity,
-            imageSrc: line.imageSrc || item.imageSrc || null,
+            // Prefer the newest image when the same line is added again after a replace.
+            imageSrc: item.imageSrc || line.imageSrc || null,
           }
         : line,
     );

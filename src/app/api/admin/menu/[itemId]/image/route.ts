@@ -116,10 +116,10 @@ export async function POST(request: Request, context: RouteContext) {
         });
 
     revalidateMenuCache();
-    const bust = `v=${Date.now()}`;
+    // Unique storage path already busts caches (no ?v= — Next Image blocks local queries).
     return NextResponse.json({
       override,
-      imagePath: `${stored.imagePath}${stored.imagePath.includes("?") ? "&" : "?"}${bust}`,
+      imagePath: stored.imagePath,
       imageSquarePath: stored.imageSquarePath,
       imageThumbPath: stored.imageThumbPath,
       imageSource: stored.imageSource,

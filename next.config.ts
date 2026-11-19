@@ -31,6 +31,11 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     qualities: [60, 75],
+    // Next 16 blocks local ?query by default — allow menu overrides + all plain locals.
+    localPatterns: [
+      { pathname: "/images/**" },
+      { pathname: "/**", search: "" },
+    ],
     remotePatterns: [
       {
         protocol: "https",

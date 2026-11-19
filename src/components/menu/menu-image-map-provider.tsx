@@ -33,7 +33,10 @@ export function useMenuImageMap(): MenuImageMap {
   return useContext(MenuImageMapContext);
 }
 
-/** Resolve admin upload for a dish (explicit prop wins). */
+/**
+ * Resolve admin upload for a dish.
+ * Live map wins over sticky props (e.g. cart localStorage) so Replace updates everywhere.
+ */
 export function useResolvedMenuImage(input: {
   id?: string | null;
   slug?: string | null;
@@ -43,6 +46,8 @@ export function useResolvedMenuImage(input: {
 }): MenuImageEntry | null {
   const map = useMenuImageMap();
   return useMemo(() => {
+    const fromMap = lookupMenuImage(map, { id: input.id, slug: input.slug });
+    if (fromMap) return fromMap;
     if (input.imageSrc?.trim()) {
       return {
         imageSrc: input.imageSrc.trim(),
@@ -50,7 +55,7 @@ export function useResolvedMenuImage(input: {
         imageThumbSrc: input.imageThumbSrc ?? null,
       };
     }
-    return lookupMenuImage(map, { id: input.id, slug: input.slug });
+    return null;
   }, [
     input.id,
     input.slug,
