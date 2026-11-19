@@ -39,6 +39,13 @@ const optionalEmail = z
 
 const optionalPartySize = z.preprocess((value) => {
   if (value === "" || value === null || value === undefined) return undefined;
+  if (typeof value === "number" && Number.isNaN(value)) return undefined;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : value;
+  }
   return value;
 }, z.number().int().min(1).max(30).optional());
 

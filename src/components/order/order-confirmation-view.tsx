@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import { useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check } from "lucide-react";
 import { TransitionLink } from "@/components/transition/TransitionLink";
@@ -7,7 +8,9 @@ import { OrderActions } from "@/components/order/order-actions";
 import { OrderStatusTimeline } from "@/components/order/order-status-timeline";
 import { OrderSummaryCard } from "@/components/order/order-summary-card";
 import { useOrderPoll } from "@/hooks/use-order-poll";
+import { isTerminalOrderStatus } from "@/lib/active-order";
 import { orderStatusLabels } from "@/lib/order-status";
+import { useActiveOrderStore } from "@/store/active-order";
 
 export function OrderConfirmationView({
   code,
@@ -17,7 +20,18 @@ export function OrderConfirmationView({
   token: string;
 }) {
   const reduceMotion = useReducedMotion();
+  const setActive = useActiveOrderStore((state) => state.setActive);
+  const clearActive = useActiveOrderStore((state) => state.clear);
   const { order, error, loading } = useOrderPoll({ code, token });
+
+  useEffect(() => {
+    if (!order) return;
+    if (isTerminalOrderStatus(order.status)) {
+      clearActive();
+      return;
+    }
+    setActive({ code, trackingToken: token });
+  }, [order, code, token, setActive, clearActive]);
 
   if (loading && !order) {
     return <p className="text-sm text-muted">Loading your order…</p>;

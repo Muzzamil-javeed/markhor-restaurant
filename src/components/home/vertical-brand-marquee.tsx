@@ -19,7 +19,7 @@ const MARQUEE_LINES = Array.from(
 export function VerticalBrandMarquee() {
   return (
     <div
-      className="pointer-events-none absolute inset-y-0 left-0 z-[2] w-[min(42vw,16rem)] overflow-hidden sm:w-[min(32vw,15rem)] lg:w-[15rem]"
+      className="pointer-events-none absolute inset-y-0 left-0 z-[2] hidden w-[min(32vw,15rem)] overflow-hidden md:block lg:w-[15rem]"
       aria-hidden
     >
       <div className="animate-marquee-vertical absolute top-0 left-[4px] flex flex-col items-start will-change-transform">

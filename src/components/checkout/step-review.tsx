@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { motion } from "framer-motion";
 import {
@@ -17,9 +18,11 @@ import { cn } from "@/lib/cn";
 import type { CheckoutFormInput } from "@/lib/checkout-schema";
 import { formatPKR } from "@/lib/format";
 import {
+  isEnabledPaymentMethod,
   paymentProviders,
   type PaymentMethodId,
 } from "@/lib/payment";
+import { syncPaymentDefault } from "@/store/checkout-draft";
 import { site } from "@/data/site";
 import { orderTypeLabels, type CartLine } from "@/store/cart";
 
@@ -38,7 +41,6 @@ const PAYMENT_ICONS: Record<PaymentMethodId, LucideIcon> = {
 
 export function StepReview({ form, lines, voucherCode, total }: Props) {
   const {
-    register,
     watch,
     setValue,
     formState: { errors },
@@ -50,6 +52,16 @@ export function StepReview({ form, lines, voucherCode, total }: Props) {
     orderType: orderType ?? "delivery",
     voucherCode,
   });
+
+  // Draft / stale state can leave a disabled method selected — snap back.
+  useEffect(() => {
+    const type = orderType ?? "delivery";
+    if (paymentMethod && isEnabledPaymentMethod(paymentMethod)) return;
+    setValue("paymentMethod", syncPaymentDefault(type, paymentMethod), {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }, [orderType, paymentMethod, setValue]);
 
   return (
     <motion.div
@@ -213,11 +225,18 @@ export function StepReview({ form, lines, voucherCode, total }: Props) {
         </p>
       </div>
 
-      <label className="flex items-center gap-2.5 rounded-xl border border-line bg-[#faf7f5] px-3 py-2.5 text-sm text-ink">
+      <label className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-line bg-[#faf7f5] px-3 py-2.5 text-sm text-ink has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand/40">
         <input
           type="checkbox"
-          className="size-4 shrink-0 rounded border-line text-brand focus-visible:ring-2 focus-visible:ring-brand/40"
-          {...register("acceptTerms")}
+          className="size-4 shrink-0 rounded border-line text-brand"
+          checked={Boolean(watch("acceptTerms"))}
+          onChange={(event) => {
+            setValue("acceptTerms", event.target.checked, {
+              shouldValidate: true,
+              shouldDirty: true,
+              shouldTouch: true,
+            });
+          }}
         />
         <FileCheck2 className="size-3.5 shrink-0 text-brand" aria-hidden />
         <span>
@@ -225,6 +244,7 @@ export function StepReview({ form, lines, voucherCode, total }: Props) {
           <TransitionLink
             href="/terms"
             className="font-medium text-brand underline-offset-2 hover:underline"
+            onClick={(event) => event.stopPropagation()}
           >
             terms of service
           </TransitionLink>

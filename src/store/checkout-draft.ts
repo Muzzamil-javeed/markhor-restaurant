@@ -18,10 +18,11 @@ type CheckoutDraftState = {
 const emptyValues: Partial<CheckoutFormInput> = {
   timing: "asap",
   paymentMethod: "cash",
-  acceptTerms: undefined,
+  acceptTerms: false,
   company: "",
   customerEmail: "",
   note: "",
+  partySize: undefined,
 };
 
 export const useCheckoutDraftStore = create<CheckoutDraftState>()(

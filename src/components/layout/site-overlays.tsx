@@ -21,11 +21,19 @@ const MobileCartBar = dynamic(
     ),
   { ssr: false },
 );
+const ActiveOrderReminder = dynamic(
+  () =>
+    import("@/components/order/active-order-reminder").then(
+      (mod) => mod.ActiveOrderReminder,
+    ),
+  { ssr: false },
+);
 
 export function SiteOverlays() {
   return (
     <>
       <MobileCartBar />
+      <ActiveOrderReminder />
       <CartDrawer />
       <CustomiseSheet />
     </>

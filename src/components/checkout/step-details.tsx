@@ -191,7 +191,15 @@ export function StepDetails({ form }: Props) {
                 max={30}
                 className={fieldClassName(Boolean(errors.partySize))}
                 aria-invalid={Boolean(errors.partySize)}
-                {...register("partySize")}
+                {...register("partySize", {
+                  setValueAs: (value) => {
+                    if (value === "" || value === null || value === undefined) {
+                      return undefined;
+                    }
+                    const parsed = Number(value);
+                    return Number.isFinite(parsed) ? parsed : undefined;
+                  },
+                })}
               />
             </Field>
           </div>
@@ -218,13 +226,20 @@ export function StepDetails({ form }: Props) {
         </div>
       </Field>
 
-      {/* Honeypot — hidden from people, visible to bots */}
-      <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden>
-        <label htmlFor="company">Company</label>
+      {/* Honeypot — off-screen; avoid name/label browsers autofill (e.g. “company”). */}
+      <div
+        className="pointer-events-none absolute -left-[9999px] h-px w-px overflow-hidden opacity-0"
+        aria-hidden
+      >
         <input
-          id="company"
+          id="mk-order-hp"
           tabIndex={-1}
-          autoComplete="off"
+          autoComplete="new-password"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          data-lpignore="true"
+          data-1p-ignore="true"
           {...register("company")}
         />
       </div>

@@ -22,9 +22,11 @@ const ease = [0.22, 1, 0.36, 1] as const;
 export function PopularPickCard({
   item,
   index,
+  className,
 }: {
   item: MenuItem;
   index: number;
+  className?: string;
 }) {
   const reduce = useReducedMotion();
   const addItem = useCartStore((state) => state.addItem);
@@ -63,7 +65,7 @@ export function PopularPickCard({
       whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.6, delay: index * 0.07, ease }}
-      className="list-none"
+      className={cn("list-none", className)}
     >
       <motion.article
         className={cn(

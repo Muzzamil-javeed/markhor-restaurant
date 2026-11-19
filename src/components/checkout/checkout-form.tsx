@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
 import { CheckoutProgress } from "@/components/checkout/checkout-progress";
 import { StepDetails } from "@/components/checkout/step-details";
@@ -23,6 +23,7 @@ import {
   selectItemCount,
   useCartStore,
 } from "@/store/cart";
+import { useActiveOrderStore } from "@/store/active-order";
 import {
   syncPaymentDefault,
   useCheckoutDraftStore,
@@ -221,48 +222,102 @@ export function CheckoutForm() {
     setDraftStep(next);
   };
 
-  const onPlaceOrder = form.handleSubmit(async (values) => {
-    setSubmitting(true);
-    setSubmitError(null);
-    setStepError(null);
-    try {
-      const payload = {
-        ...values,
-        lines,
-        voucherCode,
-        company: values.company ?? "",
-      };
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = (await response.json()) as {
-        error?: string;
-        orderCode?: string;
-        trackingToken?: string;
-      };
-      if (!response.ok || !data.orderCode || !data.trackingToken) {
-        const message = data.error ?? "Could not place the order.";
+  const submitOrder = form.handleSubmit(
+    async (values) => {
+      setSubmitting(true);
+      setSubmitError(null);
+      setStepError(null);
+      try {
+        // Always send live cart lines — draft/form can lag behind the store.
+        const payload = {
+          ...values,
+          paymentMethod: syncPaymentDefault(
+            values.orderType,
+            values.paymentMethod,
+          ),
+          lines,
+          voucherCode,
+          company: values.company ?? "",
+        };
+        const response = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = (await response.json()) as {
+          error?: string;
+          orderCode?: string;
+          trackingToken?: string;
+        };
+        if (!response.ok || !data.orderCode || !data.trackingToken) {
+          const message = data.error ?? "Could not place the order.";
+          setSubmitError(message);
+          showToast(message);
+          return;
+        }
+        clearCart();
+        resetDraft();
+        // Persist so the guest can reopen the site without remembering code/phone.
+        useActiveOrderStore.getState().setActive({
+          code: data.orderCode,
+          trackingToken: data.trackingToken,
+        });
+        const next = `/order/${encodeURIComponent(data.orderCode)}?token=${encodeURIComponent(data.trackingToken)}`;
+        if (transition) transition.navigate(next, "Order");
+        else router.push(next);
+      } catch {
+        const message = "Network error — please try again.";
         setSubmitError(message);
         showToast(message);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    (errors) => {
+      const step1Keys = new Set<string>(STEP1_FIELDS);
+      const step2Keys = new Set<string>(STEP2_FIELDS);
+      const keys = Object.keys(errors);
+      const firstKey = keys[0];
+      const firstError = firstKey
+        ? errors[firstKey as keyof typeof errors]
+        : undefined;
+      const message =
+        firstError &&
+        typeof firstError === "object" &&
+        "message" in firstError &&
+        firstError.message
+          ? String(firstError.message)
+          : "Please fix the highlighted fields before placing the order.";
+
+      setStepError(message);
+      showToast(message);
+
+      if (firstKey && step1Keys.has(firstKey)) {
+        setStep(1);
+        setDraftStep(1);
         return;
       }
-      clearCart();
-      resetDraft();
-      const next = `/order/${encodeURIComponent(data.orderCode)}?token=${encodeURIComponent(data.trackingToken)}`;
-      if (transition) transition.navigate(next, "Order");
-      else router.push(next);
-    } catch {
-      const message = "Network error — please try again.";
-      setSubmitError(message);
-      showToast(message);
-    } finally {
-      setSubmitting(false);
-    }
-  }, () => {
-    setStepError("Please fix the highlighted fields before placing the order.");
-  });
+      if (firstKey && step2Keys.has(firstKey)) {
+        setStep(2);
+        setDraftStep(2);
+      }
+    },
+  );
+
+  const onPlaceOrder = (event: FormEvent<HTMLFormElement>) => {
+    // Sync cart + payment into RHF before Zod runs — avoids stale draft values.
+    form.setValue("lines", lines, { shouldValidate: false });
+    form.setValue("voucherCode", voucherCode, { shouldValidate: false });
+    // Browser autofill often fills the honeypot — clear it for real guests.
+    form.setValue("company", "", { shouldValidate: false });
+    const type = form.getValues("orderType");
+    form.setValue(
+      "paymentMethod",
+      syncPaymentDefault(type, form.getValues("paymentMethod")),
+      { shouldValidate: false },
+    );
+    void submitOrder(event);
+  };
 
   return (
     <form onSubmit={onPlaceOrder} className="flex flex-col gap-6" noValidate>

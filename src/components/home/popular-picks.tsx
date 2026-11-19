@@ -19,9 +19,7 @@ export function HomePopularPicks() {
         {/* Right burger — ~50% visible */}
         <motion.div
           className="pointer-events-none absolute top-[6%] right-0 hidden h-[min(72vw,30rem)] w-[min(72vw,30rem)] translate-x-1/2 opacity-[0.48] lg:block"
-          animate={
-            reduce ? undefined : { y: [0, -16, 0] }
-          }
+          animate={reduce ? undefined : { y: [0, -16, 0] }}
           transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
         >
           <Image
@@ -35,7 +33,7 @@ export function HomePopularPicks() {
 
         {/* Left fries — ~50% visible + slow 360° */}
         <motion.div
-          className="absolute bottom-[16%] left-0 h-[min(70vw,28rem)] w-[min(70vw,28rem)] -translate-x-1/2 opacity-[0.48] sm:bottom-[18%]"
+          className="absolute bottom-[16%] left-0 hidden h-[min(70vw,28rem)] w-[min(70vw,28rem)] -translate-x-1/2 opacity-[0.48] sm:block sm:bottom-[18%]"
           animate={reduce ? undefined : { rotate: 360 }}
           transition={{
             duration: 58,
@@ -57,7 +55,6 @@ export function HomePopularPicks() {
         <Reveal>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-xl">
-             
               <h2 className="font-display mt-3 text-3xl leading-[0.95] tracking-wide text-[#F6F4F2] uppercase sm:text-5xl">
                 Popular picks
               </h2>
@@ -81,7 +78,23 @@ export function HomePopularPicks() {
           </div>
         </Reveal>
 
-        <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        {/* Mobile-only smooth snap slider */}
+        <ul
+          className="mt-10 -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-smooth px-4 pb-3 sm:hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          aria-label="Popular picks"
+        >
+          {popularPicks.map((item, index) => (
+            <PopularPickCard
+              key={`m-${item.id}`}
+              item={item}
+              index={index}
+              className="w-[82%] max-w-[22rem] shrink-0 snap-center"
+            />
+          ))}
+        </ul>
+
+        {/* Tablet / desktop grid */}
+        <ul className="mt-12 hidden gap-5 sm:grid sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {popularPicks.map((item, index) => (
             <PopularPickCard key={item.id} item={item} index={index} />
           ))}
