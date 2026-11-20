@@ -51,6 +51,9 @@ next-env.d.ts
 *.db
 *.db-journal
 
+# DB dumps / handoff (may contain customer phones — never commit)
+/backups/
+
 # lighthouse
 lighthouse-home.json
 lighthouse-home.html

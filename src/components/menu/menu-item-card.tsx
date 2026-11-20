@@ -32,7 +32,7 @@ export function MenuItemCard({ item }: { item: MenuItem | RuntimeMenuItem }) {
         />
         {soldOut ? (
           <span className="absolute top-3 left-3 rounded-full bg-ink/80 px-2.5 py-1 text-xs font-medium text-on-brand">
-            Sold out
+            Not available
           </span>
         ) : null}
       </div>

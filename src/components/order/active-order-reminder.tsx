@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Package, X } from "lucide-react";
@@ -16,6 +16,7 @@ import { useActiveOrderStore } from "@/store/active-order";
 import { useActiveOrderHydration } from "@/store/use-active-order-hydration";
 
 const COLLAPSED_KEY = "markhor-active-order-collapsed";
+const COLLAPSED_EVENT = "markhor-active-order-collapsed";
 
 function readCollapsed(): boolean {
   try {
@@ -32,6 +33,16 @@ function writeCollapsed(value: boolean) {
   } catch {
     /* ignore */
   }
+  window.dispatchEvent(new Event(COLLAPSED_EVENT));
+}
+
+function subscribeCollapsed(onStoreChange: () => void) {
+  window.addEventListener(COLLAPSED_EVENT, onStoreChange);
+  window.addEventListener("storage", onStoreChange);
+  return () => {
+    window.removeEventListener(COLLAPSED_EVENT, onStoreChange);
+    window.removeEventListener("storage", onStoreChange);
+  };
 }
 
 /**
@@ -44,11 +55,11 @@ export function ActiveOrderReminder() {
   const clear = useActiveOrderStore((state) => state.clear);
   const pathname = usePathname();
   const reduce = useReducedMotion();
-  const [collapsed, setCollapsed] = useState(false);
-
-  useEffect(() => {
-    setCollapsed(readCollapsed());
-  }, []);
+  const collapsed = useSyncExternalStore(
+    subscribeCollapsed,
+    readCollapsed,
+    () => false,
+  );
 
   const onOrderPage =
     Boolean(active) &&
@@ -64,13 +75,11 @@ export function ActiveOrderReminder() {
     if (!active) return;
     if (order && isTerminalOrderStatus(order.status)) {
       writeCollapsed(false);
-      setCollapsed(false);
       clear();
       return;
     }
     if (error && /not found|invalid|missing/i.test(error)) {
       writeCollapsed(false);
-      setCollapsed(false);
       clear();
     }
   }, [active, order, error, clear]);
@@ -84,12 +93,10 @@ export function ActiveOrderReminder() {
 
   const onCollapse = () => {
     writeCollapsed(true);
-    setCollapsed(true);
   };
 
   const onExpand = () => {
     writeCollapsed(false);
-    setCollapsed(false);
   };
 
   return (

@@ -27,7 +27,6 @@ type Props = {
   onView: () => void;
   onToggleAvailable: () => void;
   onPickPhoto: (file: File) => void;
-  onUseStock: () => void;
   onEdit: () => void;
   onRestore: () => void;
   onDelete: () => void;
@@ -43,7 +42,6 @@ export function MenuAdminItem({
   onView,
   onToggleAvailable,
   onPickPhoto,
-  onUseStock,
   onEdit,
   onRestore,
   onDelete,
@@ -142,7 +140,10 @@ export function MenuAdminItem({
           isCard && "px-4 pt-3 pb-4",
         )}
       >
-        <label className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-xs font-medium">
+        <label
+          className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-xs font-medium"
+          aria-busy={busy}
+        >
           <span
             className={
               item.available && !item.hidden ? "text-ink" : "text-destructive"
@@ -152,16 +153,23 @@ export function MenuAdminItem({
               ? "Hidden"
               : item.available
                 ? "Available"
-                : "Sold out"}
+                : "Not available"}
           </span>
-          <input
-            type="checkbox"
-            checked={item.available && !item.hidden}
-            disabled={busy || item.hidden}
-            onChange={onToggleAvailable}
-            className="size-4 rounded border-line text-brand"
-            aria-label={`Toggle availability for ${item.name}`}
-          />
+          {busy ? (
+            <Loader2
+              className="size-3.5 animate-spin text-brand"
+              aria-hidden
+            />
+          ) : (
+            <input
+              type="checkbox"
+              checked={item.available && !item.hidden}
+              disabled={item.hidden}
+              onChange={onToggleAvailable}
+              className="size-4 rounded border-line text-brand"
+              aria-label={`Toggle availability for ${item.name}`}
+            />
+          )}
         </label>
 
         <label
@@ -188,17 +196,6 @@ export function MenuAdminItem({
             }}
           />
         </label>
-
-        {item.imagePath ? (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={onUseStock}
-            className="inline-flex h-9 items-center rounded-full border border-line px-3 text-xs font-semibold text-muted hover:bg-tint"
-          >
-            Use stock
-          </button>
-        ) : null}
 
         <button
           type="button"

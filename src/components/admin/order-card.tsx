@@ -211,7 +211,7 @@ export function AdminOrderCard({ order, onStatus, busy, isNew }: Props) {
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             className="mt-1.5 h-10 w-full rounded-xl border border-line bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-            placeholder="Out of stock, customer request…"
+            placeholder="Not available, customer request…"
           />
           <button
             type="button"

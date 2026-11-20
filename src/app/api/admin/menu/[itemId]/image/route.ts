@@ -131,34 +131,3 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-/** Remove uploaded photo → fall back to stock. */
-export async function DELETE(request: Request, context: RouteContext) {
-  const auth = assertAdmin(request);
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-  const { itemId } = await context.params;
-  if (!(await isKnownMenuItemId(itemId))) {
-    return NextResponse.json({ error: "Unknown menu item." }, { status: 404 });
-  }
-
-  const isCustom = !staticItemById(itemId);
-  const override = isCustom
-    ? await updateCustomMenuItem(itemId, {
-        imagePath: null,
-        imageSquarePath: null,
-        imageThumbPath: null,
-        imageSource: null,
-      })
-    : await upsertMenuOverride({
-        itemId,
-        imagePath: null,
-        imageSquarePath: null,
-        imageThumbPath: null,
-        imageSource: null,
-      });
-
-  revalidateMenuCache();
-  return NextResponse.json({ override });
-}

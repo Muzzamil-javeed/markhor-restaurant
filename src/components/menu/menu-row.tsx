@@ -97,7 +97,7 @@ export function MenuRow({ item }: { item: MenuItem }) {
         className="min-w-0 flex-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
         aria-label={
           soldOut
-            ? `${item.name}, sold out`
+            ? `${item.name}, not available`
             : customise
               ? `Customise ${item.name}`
               : `Add ${item.name}`
@@ -136,7 +136,7 @@ export function MenuRow({ item }: { item: MenuItem }) {
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           {soldOut ? (
             <span className="font-eyebrow text-[10px] font-semibold text-brand uppercase">
-              Sold out
+              Not available
             </span>
           ) : null}
           {item.tags?.map((tag) => (

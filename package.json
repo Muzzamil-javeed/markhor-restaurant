@@ -17,7 +17,9 @@
     "images": "tsx scripts/fetch-images.ts",
     "images:force": "tsx scripts/fetch-images.ts --force",
     "images:dummy": "tsx scripts/generate-dummy-images.ts",
-    "images:dummy:force": "tsx scripts/generate-dummy-images.ts --force"
+    "images:dummy:force": "tsx scripts/generate-dummy-images.ts --force",
+    "images:export-blob": "tsx scripts/export-blob-images.ts",
+    "db:export": "tsx scripts/export-db-dump.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -53,9 +53,9 @@ export function MenuAdmin() {
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [query, setQuery] = useState("");
   const [viewMode, setViewMode] = useState<MenuAdminViewMode>("card");
-  const [photoFilter, setPhotoFilter] = useState<
-    "all" | "missing" | "stock" | "uploaded"
-  >("all");
+  const [photoFilter, setPhotoFilter] = useState<"all" | "missing" | "uploaded">(
+    "all",
+  );
   const [matchStyle, setMatchStyle] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -129,8 +129,7 @@ export function MenuAdmin() {
       if (!matchesQuery) return false;
       const uploaded = Boolean(item.imagePath);
       if (photoFilter === "uploaded") return uploaded;
-      if (photoFilter === "stock") return !uploaded && item.hasStaticPhoto;
-      if (photoFilter === "missing") return !uploaded && !item.hasStaticPhoto;
+      if (photoFilter === "missing") return !uploaded;
       return true;
     });
   }, [items, query, photoFilter]);
@@ -286,29 +285,6 @@ export function MenuAdmin() {
     }
   };
 
-  const removePhoto = async (item: MenuAdminItemData) => {
-    if (!item.imagePath) return;
-    if (!window.confirm(`Remove uploaded photo for “${item.name}”? Stock will show.`)) {
-      return;
-    }
-    setBusyId(item.id);
-    try {
-      const response = await fetch(`/api/admin/menu/${item.id}/image`, {
-        method: "DELETE",
-      });
-      const data = await readJson<{ error?: string }>(response);
-      if (!response.ok) {
-        setError(data.error ?? "Could not remove photo.");
-        showToast(data.error ?? "Could not remove photo.");
-        return;
-      }
-      showToast("Using stock photo again.");
-      await load();
-    } finally {
-      setBusyId(null);
-    }
-  };
-
   const removeItem = async (item: MenuAdminItemData) => {
     if (!window.confirm(`Hide “${item.name}” from the front menu?`)) return;
     setBusyId(item.id);
@@ -387,7 +363,7 @@ export function MenuAdmin() {
             value={photoFilter}
             onChange={(event) =>
               setPhotoFilter(
-                event.target.value as "all" | "missing" | "stock" | "uploaded",
+                event.target.value as "all" | "missing" | "uploaded",
               )
             }
             className="h-10 rounded-full border border-line bg-white px-3 text-xs font-semibold outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
@@ -395,7 +371,6 @@ export function MenuAdmin() {
           >
             <option value="all">All photos</option>
             <option value="missing">Missing photo</option>
-            <option value="stock">Stock photo</option>
             <option value="uploaded">Uploaded</option>
           </select>
         </label>
@@ -508,7 +483,6 @@ export function MenuAdmin() {
                       }
                     }}
                     onPickPhoto={(file) => void uploadImage(item, file)}
-                    onUseStock={() => void removePhoto(item)}
                     onEdit={() => openEdit(item)}
                     onRestore={() => void restoreItem(item)}
                     onDelete={() => void removeItem(item)}
@@ -667,9 +641,16 @@ export function MenuAdmin() {
                 type="button"
                 disabled={busyId === editing.id}
                 onClick={() => void saveEdit()}
-                className="h-10 rounded-full bg-brand px-4 text-sm font-semibold text-on-brand disabled:opacity-50"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-on-brand disabled:opacity-50"
               >
-                Save
+                {busyId === editing.id ? (
+                  <>
+                    <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                    Saving…
+                  </>
+                ) : (
+                  "Save"
+                )}
               </button>
             </div>
           </div>

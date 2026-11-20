@@ -45,7 +45,7 @@ export function MenuItemAdd({ item }: { item: ItemWithImage }) {
         disabled
         className="inline-flex h-10 items-center justify-center rounded-xl border border-line bg-tint/50 px-4 text-sm font-medium text-muted"
       >
-        Unavailable
+        Not available
       </button>
     );
   }

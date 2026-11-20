@@ -45,19 +45,25 @@ export function DailySummary({ summary }: { summary: DailySummaryData | null }) 
         </div>
       </div>
 
-      <div className={cardClass}>
-        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-tint text-brand">
+      <Link
+        href="/admin/revenue"
+        className={cn(
+          cardClass,
+          "group transition-all duration-200 hover:border-brand/25 hover:shadow-[0_8px_20px_rgba(94,15,29,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40",
+        )}
+      >
+        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-tint text-brand transition-colors duration-200 group-hover:bg-brand/10">
           <Banknote className="size-4" aria-hidden />
         </span>
         <div>
-          <p className="font-eyebrow text-[10px] tracking-[0.16em] text-muted uppercase">
+          <p className="font-eyebrow text-[10px] font-semibold tracking-[0.16em] text-muted uppercase">
             Revenue
           </p>
           <p className="mt-1.5 font-heading text-lg font-semibold tabular-nums text-ink">
             {formatPKR(summary.revenue)}
           </p>
         </div>
-      </div>
+      </Link>
 
       <Link
         href="/admin/orders/completed"

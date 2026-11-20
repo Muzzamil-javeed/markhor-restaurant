@@ -1,5 +1,7 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
+
 type CategoryOption = { id: string; name: string };
 
 type Props = {
@@ -107,9 +109,16 @@ export function MenuAdminAddDialog({
             type="button"
             disabled={busy}
             onClick={onSave}
-            className="h-10 rounded-full bg-brand px-4 text-sm font-semibold text-on-brand disabled:opacity-50"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-on-brand disabled:opacity-50"
           >
-            Add dish
+            {busy ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                Saving…
+              </>
+            ) : (
+              "Add dish"
+            )}
           </button>
         </div>
       </div>

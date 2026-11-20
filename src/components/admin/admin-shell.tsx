@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Ban,
+  Banknote,
   CheckCircle2,
   ClipboardList,
   LogOut,
@@ -17,6 +18,7 @@ const links = [
   { href: "/admin/orders", label: "Orders", Icon: ClipboardList },
   { href: "/admin/orders/completed", label: "Completed", Icon: CheckCircle2 },
   { href: "/admin/orders/cancelled", label: "Cancelled", Icon: Ban },
+  { href: "/admin/revenue", label: "Revenue", Icon: Banknote },
   { href: "/admin/menu", label: "Menu", Icon: UtensilsCrossed },
 ] as const;
 
